@@ -114,7 +114,7 @@ The following table lists the reference values for each pollutant used in calcul
 
 The AQI for each pollutant is calculated using the following formula, as described [here](https://donnees.montreal.ca/dataset/rsqa-indice-qualite-air#methodology):
 
-![AQI Equation](docs/aqi-equation.png)
+![AQI Equation](docs/aqi_equation.png)
 
 where:
 - `measured_value` is the concentration of the pollutant in µg/m³ measured at a given time.
