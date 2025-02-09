@@ -1,7 +1,7 @@
 {
     "domain": "montreal_aqi",
     "name": "Montreal Air Quality Index",
-    "version": "0.1.1",
+    "version": "0.1.3",
     "documentation": "https://github.com/normcyr/montreal_aqi",
     "issue_tracker": "https://github.com/normcyr/montreal_aqia/issues",
     "codeowners": ["@normcyr"],

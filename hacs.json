@@ -1,0 +1,11 @@
+{
+    "name": "Montreal AQI",
+    "country": "CA",
+    "description": "Home Assistant integration for Montréal's Air Quality Index (AQI)",
+    "domain": "montreal_aqi",
+    "codeowners": ["@normcyr"],
+    "documentation": "https://github.com/normcyr/montreal_aqi",
+    "version": "0.1.3",
+    "iot_class": "Cloud Polling"
+}
+  

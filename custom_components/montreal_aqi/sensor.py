@@ -47,7 +47,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
         manufacturer="Réseau de surveillance de la qualité de l'air",
         model="Air Quality Sensor",
         entry_type="service",
-        configuration_url="https://donnees.montreal.ca/"
+        configuration_url="https://donnees.montreal.ca/",
     )
 
     sensors = [
@@ -57,8 +57,9 @@ async def async_setup_entry(hass, entry, async_add_entities):
 
     for pollutant in POLLUTANTS:
         if pollutant in coordinator.data:
-            sensors.append(PollutantSensor(coordinator, station_id, pollutant, device_info))
-
+            sensors.append(
+                PollutantSensor(coordinator, station_id, pollutant, device_info)
+            )
 
     async_add_entities(sensors, True)
 
