@@ -5,3 +5,5 @@ __pycache__/
 .idea/
 
 custom_components_test/
+
+.DS_Store
