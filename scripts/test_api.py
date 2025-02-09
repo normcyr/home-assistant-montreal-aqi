@@ -1,7 +1,7 @@
-import requests
 import logging
 import argparse
-from collections import defaultdict
+
+import requests
 
 
 # API URL and Resource ID

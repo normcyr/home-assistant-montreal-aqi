@@ -131,4 +131,8 @@ The air quality index (AQI) value is defined as follows:
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License. See the [LICENSE](LICENCE) file for details.
+
+## Disclaimer
+
+I am not a formally trained programmer, and this project was developed as part of my learning journey. Throughout the process, I have received assistance from ChatGPT, which has helped me improve the code and understand various programming concepts. Any improvements or suggestions to make the code better are more than welcome! Contributions are encouraged and appreciated.
