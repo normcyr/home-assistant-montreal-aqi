@@ -129,9 +129,9 @@ The air quality index (AQI) value is defined as follows:
 - Acceptable: From 26 to 50
 - Poor: 51 or higher
 
-## License
+## Licence
 
-This project is licensed under the MIT License. See the [LICENSE](LICENCE) file for details.
+This project is licensed under the MIT Licence. See the [LICENCE](LICENCE) file for details.
 
 ## Disclaimer
 
