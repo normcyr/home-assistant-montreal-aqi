@@ -43,20 +43,22 @@ async def async_setup_entry(hass, entry, async_add_entities):
     # Create the device (station) with all sensors linked to it
     device_info = DeviceInfo(
         identifiers={(DOMAIN, station_id)},
-        name=f"Montreal AQI Station {station_id}",
-        manufacturer="Montreal Environmental Agency",
-        model="AQI Sensor",
+        name=f"Montreal Air Quality Monitoring Station {station_id}",
+        manufacturer="Réseau de surveillance de la qualité de l'air",
+        model="Air Quality Sensor",
         entry_type="service",
+        configuration_url="https://donnees.montreal.ca/"
     )
 
     sensors = [
         AQISensor(coordinator, station_id, device_info),
         AirQualityCategorySensor(coordinator, station_id, device_info),
     ]
-    sensors += [
-        PollutantSensor(coordinator, station_id, pollutant, device_info)
-        for pollutant in POLLUTANTS
-    ]
+
+    for pollutant in POLLUTANTS:
+        if pollutant in coordinator.data:
+            sensors.append(PollutantSensor(coordinator, station_id, pollutant, device_info))
+
 
     async_add_entities(sensors, True)
 
@@ -71,9 +73,10 @@ class AQISensor(CoordinatorEntity, SensorEntity):
         self._attr_unique_id = f"montreal_aqi_station_{station_id}"
         self._attr_device_class = "aqi"
         self._attr_unit_of_measurement = "AQI"
-        self._attr_device_info = device_info
         self._attr_suggested_display_precision = 0
-        _LOGGER.debug("Initialized AQI Sensor for station %s", station_id)
+        self._attr_device_info = device_info
+
+        _LOGGER.debug("Initialized Air Quality Sensor for station %s", station_id)
 
     @property
     def state(self):
@@ -91,25 +94,20 @@ class PollutantSensor(CoordinatorEntity, SensorEntity):
         super().__init__(coordinator)
         self.pollutant = pollutant
         self.station_id = station_id
-        self._attr_name = f"{pollutant} level monitoring station {station_id}"
+        self._attr_name = f"{pollutant} level station {station_id}"
         self._attr_unique_id = f"{pollutant.lower()}_montreal_aqi_station_{station_id}"
         _LOGGER.debug(
             "Initialized Pollutant Sensor for %s at station %s", pollutant, station_id
         )
 
-        # Assign a device class based on the pollutant type
-        if pollutant == "CO":
-            self._attr_device_class = "carbon_monoxide"
-        elif pollutant == "SO2":
-            self._attr_device_class = "sulphur_dioxide"
-        elif pollutant == "O3":
-            self._attr_device_class = "ozone"
-        elif pollutant == "NO2":
-            self._attr_device_class = "nitrogen_dioxide"
-        elif pollutant == "PM":
-            self._attr_device_class = "pm25"
-        else:
-            self._attr_device_class = "aqi"  # Default to air quality index if unknown
+        device_classes = {
+            "CO": "carbon_monoxide",
+            "SO2": "sulphur_dioxide",
+            "O3": "ozone",
+            "NO2": "nitrogen_dioxide",
+            "PM": "pm25",
+        }
+        self._attr_device_class = device_classes.get(pollutant, "aqi")
 
         self._attr_unit_of_measurement = POLLUTANT_UNITS.get(pollutant, "")
         self._attr_device_info = device_info
@@ -156,5 +154,5 @@ class AirQualityCategorySensor(CoordinatorEntity, SensorEntity):
             elif 26 <= aqi <= 50:
                 return "Acceptable"
             else:
-                return "Poor"
+                return "Bad"
         return None
