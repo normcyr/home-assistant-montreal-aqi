@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.env
+.vscode/
+.idea/
+
+custom_components_test/
