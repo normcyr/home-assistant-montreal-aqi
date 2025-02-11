@@ -7,3 +7,5 @@ __pycache__/
 custom_components_test/
 
 .DS_Store
+
+commit_notes.md

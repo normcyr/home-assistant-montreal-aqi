@@ -1,43 +1,21 @@
 {
-    "config": {
-      "step": {
-        "user": {
-          "title": "Set up Montreal AQI",
-          "description": "Enter your station ID to monitor air quality.",
-          "data": {
-            "station_id": "Station ID"
-          }
+  "config": {
+    "step": {
+      "user": {
+        "title": "Set up Montreal AQI",
+        "description": "Enter your station ID to monitor air quality.",
+        "data": {
+          "station_id": "Station ID"
         }
-      },
-      "error": {
-        "invalid_station": "Invalid station ID. Please check and try again.",
-        "connection_error": "Could not connect to AQI service. Check your internet connection."
-      },
-      "abort": {
-        "already_configured": "This station is already configured."
       }
     },
-    "entity": {
-      "sensor": {
-        "montreal_aqi": {
-          "name": "Montreal Air Quality Index"
-        },
-        "air_quality_category": {
-          "name": "Air Quality Category",
-          "state": {
-            "good": "Good",
-            "acceptable": "Acceptable",
-            "bad": "Bad"
-          }
-        },
-        "pollutant": {
-          "co": "Carbon Monoxide (CO)",
-          "so2": "Sulfur Dioxide (SO₂)",
-          "o3": "Ozone (O₃)",
-          "no2": "Nitrogen Dioxide (NO₂)",
-          "pm": "Particulate Matter (PM2.5)"
-        }
-      }
+    "error": {
+      "invalid_station": "Invalid station ID. Please check and try again.",
+      "connection_error": "Could not connect to AQI service. Check your internet connection."
+    },
+    "abort": {
+      "already_configured": "This station is already configured."
     }
-  }
+  } 
+}
   

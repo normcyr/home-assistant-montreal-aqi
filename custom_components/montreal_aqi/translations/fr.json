@@ -1,43 +1,21 @@
 {
-    "config": {
-      "step": {
-        "user": {
-          "title": "Configurer Montreal AQI",
-          "description": "Entrez l'ID de la station pour surveiller la qualité de l'air.",
-          "data": {
-            "station_id": "ID de la station"
-          }
+  "config": {
+    "step": {
+      "user": {
+        "title": "Configurer Montreal AQI",
+        "description": "Entrez l'ID de la station pour surveiller la qualité de l'air.",
+        "data": {
+          "station_id": "ID de la station"
         }
-      },
-      "error": {
-        "invalid_station": "ID de station invalide. Veuillez vérifier et réessayer.",
-        "connection_error": "Impossible de se connecter au service AQI. Vérifiez votre connexion Internet."
-      },
-      "abort": {
-        "already_configured": "Cette station est déjà configurée."
       }
     },
-    "entity": {
-      "sensor": {
-        "montreal_aqi": {
-          "name": "Indice de la qualité de l'air Montréal"
-        },
-        "air_quality_category": {
-          "name": "Qualité de l'air",
-          "state": {
-            "good": "Bon",
-            "acceptable": "Acceptable",
-            "bad": "Mauvais"
-          }
-        },
-        "pollutant": {
-          "co": "Monoxyde de carbone (CO)",
-          "so2": "Dioxyde de soufre (SO₂)",
-          "o3": "Ozone (O₃)",
-          "no2": "Dioxyde d'azote (NO₂)",
-          "pm": "Particules fines (PM2.5)"
-        }
-      }
+    "error": {
+      "invalid_station": "ID de station invalide. Veuillez vérifier et réessayer.",
+      "connection_error": "Impossible de se connecter au service AQI. Vérifiez votre connexion Internet."
+    },
+    "abort": {
+      "already_configured": "Cette station est déjà configurée."
     }
   }
+}
   

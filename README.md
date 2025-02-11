@@ -2,7 +2,7 @@
 
 ![Icon for the integration](icon.png)
 
-This project provides a Home Assistant integration to retrieve and display real-time Air Quality Index (AQI) data from a monitoring station on the island of Montréal from open data of the Réseau de surveillance de la qualité de l'air (RSQA) [API](https://donnees.montreal.ca/dataset/rsqa-indice-qualite-air/resource/a25fdea2-7e86-42ac-8301-ca77db3ff17e)). 
+This project provides a Home Assistant integration to retrieve and display real-time Air Quality Index (AQI) data from a monitoring station on the island of Montréal from open data of the Réseau de surveillance de la qualité de l'air (RSQA) [API](https://donnees.montreal.ca/dataset/rsqa-indice-qualite-air/resource/a25fdea2-7e86-42ac-8301-ca77db3ff17e). 
 
 It calculates AQI values based on pollutants (SO2, CO, O3, NO2, PM) and exposes the results as a sensor with attributes for each pollutant level, including the station's timestamp.
 
@@ -21,7 +21,13 @@ List and location of the stations can be found [here](https://donnees.montreal.c
 
 ## Installation
 
-### 1. Download the Repository
+### Via HACS
+
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Normand+Cyr&repository=https%3A%2F%2Fgithub.com%2Fnormcyr%2Fhome-assistant-montreal-aqi)
+
+### Manually
+
+#### 1. Download the Repository
 
 Clone this repository.
 
@@ -31,7 +37,7 @@ git clone https://github.com/yourusername/home-assistant-montreal-aqi.git
 
 And copy the folder `custom_components/montreal_aqi` into the `custom_components` folder of your Home Assistant instance.
 
-### 2. Configuration in Home Assistant
+#### 2. Configuration in Home Assistant
 
 The integration can then be added directly via the Home Assistant UI:
 
@@ -39,40 +45,68 @@ The integration can then be added directly via the Home Assistant UI:
 - Search for Montreal AQI and click on it.
 - Follow the on-screen instructions to set up the integration by selecting the desired air quality monitoring station (available from the Montréal dataset).
 
-### 3. Restart Home Assistant
+#### 3. Restart Home Assistant
 
 To apply the changes, restart Home Assistant:
 
 ```bash
 # In the Home Assistant UI:
-Configuration > Server Controls > Restart
+ Developer tools > Restart
 ```
 
 ## Usage
 
-After installation, the integration will create a sensor that reports:
+After installation, the integration will create sensors based on the available air quality data for the selected station.
 
-- **State**: The overall AQI value.
-- **Attributes**:
-  - `SO2`: Sulfur dioxide concentration.
-  - `CO`: Carbon monoxide concentration.
-  - `O3`: Ozone concentration.
-  - `NO2`: Nitrogen dioxide concentration.
-  - `PM`: Particulate matter concentration.
-  - `timestamp`: The measurement date as a timestamp.
+### Sensors Created
 
-You can use this sensor in your Home Assistant dashboard, for automation, or for logging purposes.
+1. AQI Sensor (`sensor.aqi_station_<station_id>`)
+  
+- Reports the overall Air Quality Index (AQI) value.
 
-## Development
+2. Air Quality Category Sensor (`sensor.air_quality_category_station_<station_id>`)
 
-### Requirements
+- Displays a textual representation of air quality (e.g., "Good", "Acceptable", "Bad").
 
-- Python 3.8+
-- Home Assistant development environment
+3. Individual pollutant Sensors (only if data is available)
+- Sensors are only created for pollutants that have reported values. Example: `sensor.no2_level_station_<station_id>`
 
-### Testing Locally
+### Dashboard Examples
 
-To test the integration locally:
+You can use these sensors in your dashboard with different Lovelace cards. 
+
+For instance, to display AQI as a gauge card and colour it based on the severity:
+
+```yaml
+type: gauge
+entity: sensor.aqi_station_<station_id>
+min: 0
+max: 75
+severity:
+  green: 0
+  yellow: 25
+  red: 50
+```
+
+To display individual pollutants (SO₂ and ozone in this case):
+
+```yaml
+type: entities
+title: Air Quality Details
+entities:
+  - entity: sensor.aqi_station_<station_id>
+    name: Air Quality Index
+  - entity: sensor.air_quality_category_station_<station_id>
+    name: Air quality category
+  - entity: sensor.so2_level_monitoring_station_<station_id>
+    name: Sulfur Dioxide (SO₂)
+  - entity: sensor.o3_level_monitoring_station_<station_id>
+    name: Ozone (O₃)
+```
+
+## Command Line Testing
+
+To test the API locally:
 
 1. Clone the repository to your local machine.
 2. Install required dependencies:
@@ -81,11 +115,13 @@ To test the integration locally:
 pip install -r requirements.txt
 ```
 
-3. Run the Python script test_api.py to simulate fetching AQI data and testing the calculations:
+3. Run the Python script `test_api.py` found in the `scripts` folder to simulate fetching AQI data and testing the calculations:
 
 ```bash
-python test_api.py
+python scripts/test_api.py
 ```
+
+More details are found in the [README](scripts/README.md) file associated with the script.
 
 ### Contributing
 
