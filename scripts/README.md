@@ -77,16 +77,12 @@ Enter Station ID: <station_id>
 
 The contribution of each pollutant to the AQI is calculated using the formula:
 
-![AQI Equation](docs/aqi_equation.png)
+![AQI Equation](../docs/aqi_equation.png)
 
 
 where:
 - `value` is the measured concentration of the pollutant.
 - `ref_value` is the reference concentration for that pollutant.
-
-The total AQI is the sum of AQI contributions from all pollutants.
-
-$$AQI = \sum \left( \frac{\text{measured\_value}}{\text{reference\_value}} \right) \times 50$$
 
 ## Licence
 
