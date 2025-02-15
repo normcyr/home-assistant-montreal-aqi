@@ -44,7 +44,16 @@ class Pollutant:
             )
 
     def __repr__(self):
-        return f"Pollutant(name='{self.name}', fullname='{self.fullname}', ref_value={self.ref_value}, value={self.value}, aqi={self.aqi_value}, hour={self.hour})"
+        return (
+            f"Pollutant("
+            f"name='{self.name}', "
+            f"fullname='{self.fullname}', "
+            f"ref_value={self.ref_value}, "
+            f"value={self.value}, "
+            f"aqi={self.aqi_value}, "
+            f"hour={self.hour}"
+            f")"
+        )
 
 
 # Creating pollutant instances
