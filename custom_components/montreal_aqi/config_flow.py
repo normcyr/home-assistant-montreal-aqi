@@ -1,11 +1,10 @@
 import logging
-import voluptuous as vol
 
+import voluptuous as vol
 from homeassistant import config_entries
 
 from .api import get_list_stations
-from .const import DOMAIN, CONF_STATION
-
+from .const import CONF_STATION, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 

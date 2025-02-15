@@ -1,18 +1,17 @@
-from datetime import timedelta
 import logging
+from datetime import timedelta
 
 import aiohttp
-
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import (
+    CoordinatorEntity,
     DataUpdateCoordinator,
     UpdateFailed,
-    CoordinatorEntity,
 )
 
 from .api import MontrealAQIAPI
-from .const import DOMAIN, POLLUTANTS, POLLUTANT_UNITS, UPDATE_INTERVAL
+from .const import DOMAIN, POLLUTANT_UNITS, POLLUTANTS, UPDATE_INTERVAL
 
 _LOGGER = logging.getLogger(__name__)
 

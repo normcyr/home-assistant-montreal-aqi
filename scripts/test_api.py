@@ -1,8 +1,7 @@
-import logging
 import argparse
+import logging
 
 import requests
-
 
 # API URL and Resource ID
 API_URL = "https://donnees.montreal.ca/api/3/action/datastore_search"
@@ -144,7 +143,7 @@ def sum_aqi_values(pollutants):
 def get_list_stations():
     params = {"resource_id": LIST_RESOURCE_ID}
     try:
-        logging.info(f"Fetching list of monitoring stations...")
+        logging.info("Fetching list of monitoring stations...")
         response = requests.get(API_URL, params=params)
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
@@ -166,7 +165,7 @@ def get_list_stations():
                 logging.debug(station_info)
                 list_stations.append(station_info)
 
-        logging.info(f"Found a list of monitoring stations.")
+        logging.info("Found a list of monitoring stations.")
         logging.info(list_stations)
 
         return list_stations
