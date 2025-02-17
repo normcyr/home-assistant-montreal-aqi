@@ -28,19 +28,19 @@ Run the script with the following options:
 ### Fetch AQI for a specific station
 
 ```bash
-python test_api.py --station <station_id>
+python montreal_aqi_api.py --station <station_id>
 ```
 
 Example:
 
 ```bash
-python test_api.py --station 1
+python montreal_aqi_api.py --station 1
 ```
 
 ### List available monitoring stations
 
 ```bash
-python test_api.py --list
+python montreal_aqi_api.py --list
 ```
 
 ### Enable debug logging
@@ -48,7 +48,7 @@ python test_api.py --list
 To enable debug logging for more detailed output, use:
 
 ```bash
-python test_api.py --debug --station <station_id>
+python montreal_aqi_api.py --debug --station <station_id>
 ```
 
 ### Run interactively
@@ -56,7 +56,7 @@ python test_api.py --debug --station <station_id>
 If no station ID is provided, the script will prompt for input:
 
 ```bash
-python test_api.py
+python montreal_aqi_api.py
 Enter Station ID: <station_id>
 ```
 

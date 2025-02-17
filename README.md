@@ -1,6 +1,6 @@
 # Air Quality Index (AQI) Integration for Home Assistant
 
-![Logo of the project](montreal_aqi_logo.png)
+![Logo of the project](docs/montreal_aqi_logo.png)
 
 This project provides a Home Assistant integration to retrieve and display real-time Air Quality Index (AQI) data from a monitoring station on the island of Montréal from open data of the Réseau de surveillance de la qualité de l'air (RSQA) [API](https://donnees.montreal.ca/dataset/rsqa-indice-qualite-air/resource/a25fdea2-7e86-42ac-8301-ca77db3ff17e). 
 
