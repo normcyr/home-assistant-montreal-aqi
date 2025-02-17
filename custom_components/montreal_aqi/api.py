@@ -35,7 +35,7 @@ class MontrealAQIAPI:
     def __init__(self, session: aiohttp.ClientSession, station_id: str):
         self.session = session
         self.station_id = station_id
-        _LOGGER.debug(f"Initialized MontrealAQIAPI for station {station_id}")
+        _LOGGER.debug(f"Initialized MontrealAQI API for station {station_id}")
 
     async def get_latest_data(self):
         """Fetch latest AQI data for a given station."""
@@ -43,14 +43,17 @@ class MontrealAQIAPI:
         _LOGGER.debug(
             f"Fetching latest AQI data for station {self.station_id} with params {params}"
         )
-
         try:
             async with async_timeout.timeout(10):
                 async with self.session.get(API_URL, params=params) as response:
                     if response.status == 200:
                         data = await response.json()
-                        _LOGGER.debug("Fetched data: %s", data)
-                        return self._parse_data(data)
+                        if data:
+                            _LOGGER.debug("Fetched data: %s", data)
+                            return self._parse_data(data)
+                        else:
+                            _LOGGER.warning("No air quality data available")
+                            return None
                     else:
                         _LOGGER.error(
                             "API request failed with status code %s", response.status
@@ -58,7 +61,7 @@ class MontrealAQIAPI:
                         return None
         except (aiohttp.ClientError, asyncio.TimeoutError) as e:
             _LOGGER.error("Error fetching AQI data: %s", str(e))
-            return None
+            raise
 
     def _parse_data(self, data):
         """Extract latest AQI and pollutant data for the station."""

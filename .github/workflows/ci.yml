@@ -33,8 +33,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install flake8 black
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          if [ -f requirements_test.txt ]; then pip install -r requirements_test.txt; fi
 
-      # Run Linting (flake8, black)
+      # Linting (flake8, black)
       - name: Lint with flake8
         run: |
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
@@ -43,8 +44,6 @@ jobs:
       - name: Check code formatting with Black
         run: black --check ./custom_components/montreal_aqi ./scripts
 
-      # Make sure the API is working
-      - name: Check operational API
-        run: | 
-          python scripts/test_api.py --list
-          python scripts/test_api.py --station 80
+      # Unit tests
+      - name: Run unit tests
+        run:  pytest          
