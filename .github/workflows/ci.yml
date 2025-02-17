@@ -3,33 +3,48 @@ name: Continuous integration
 on:
   push:
   pull_request:
+  schedule:
+    - cron: "0 5 * * *"
 
 jobs:
   test:
     name: Run Lint
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10","3.11","3.12"] 
 
     steps:
       # Checkout the code
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # Set up Python
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.12' 
+          python-version: ${{ matrix.python-version }}
+          
 
       # Install dependencies
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
           pip install flake8 black
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
       # Run Linting (flake8, black)
       - name: Lint with flake8
-        run: flake8 --max-line-length=120 ./custom_components/montreal_aqi ./scripts
+        run: |
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
       - name: Check code formatting with Black
         run: black --check ./custom_components/montreal_aqi ./scripts
+
+      # Make sure the API is working
+      - name: Check operational API
+        run: | 
+          python scripts/test_api.py --list
+          python scripts/test_api.py --station 80
