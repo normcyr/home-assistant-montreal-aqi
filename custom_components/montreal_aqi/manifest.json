@@ -9,5 +9,5 @@
     "issue_tracker": "https://github.com/normcyr/home-assistant-montreal-aqi/issues",
     "loggers": ["custom_components.montreal_aqi"],
     "requirements": ["aiohttp"],
-    "version": "0.2.2"
+    "version": "0.2.3"
   }
