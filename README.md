@@ -32,7 +32,7 @@ List and location of the stations can be found [here](https://donnees.montreal.c
 Clone this repository.
 
 ```bash
-git clone https://github.com/yourusername/home-assistant-montreal-aqi.git
+git clone https://github.com/normcyr/home-assistant-montreal-aqi.git
 ```
 
 And copy the folder `custom_components/montreal_aqi` into the `custom_components` folder of your Home Assistant instance.
@@ -69,6 +69,7 @@ After installation, the integration will create sensors based on the available a
 - Displays a textual representation of air quality (e.g., "Good", "Acceptable", "Bad").
 
 3. Individual pollutant Sensors (only if data is available)
+
 - Sensors are only created for pollutants that have reported values. Example: `sensor.no2_level_station_<station_id>`
 
 ### Dashboard Examples
@@ -133,7 +134,6 @@ We welcome contributions! To contribute:
 4. Push to your branch (`git push origin feature-branch`).
 5. Open a pull request.
 
-
 ## Technical Data
 
 ### Reference Values for Pollutants
@@ -155,11 +155,12 @@ The AQI for each pollutant is calculated using the following formula, as describ
 ![AQI Equation](docs/aqi_equation.png)
 
 where:
+
 - `measured_value` is the concentration of the pollutant in µg/m³ measured at a given time.
 - `reference_value` is the predefined reference value for the pollutant (as listed in the table above).
 - `AQI` is the calculated air quality index value for that pollutant.
 
-The AQI contribution for each pollutant is calculated individually using the formula, and the total AQI for the station is the sum of the individual pollutant AQIs. The total AQI provides an overall indication of air quality, helping to assess the overall health impact based on the measured pollutants.
+The AQI contribution for each pollutant is calculated individually using the formula above. The reported AQI value at a specific station is the highest of the sub-indices calculated for the pollutants continuously measured at that station. It provides an overall indication of air quality, helping to assess the overall health impact based on the measured pollutants.
 
 The air quality index (AQI) value is defined as follows:
 
@@ -169,7 +170,7 @@ The air quality index (AQI) value is defined as follows:
 
 ## Licence
 
-This project is licensed under the MIT Licence. See the [LICENCE](LICENCE) file for details.
+This project is licensed under the MIT Licence. See the [LICENSE](LICENSE) file for details.
 
 ## Disclaimer
 
