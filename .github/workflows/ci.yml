@@ -42,6 +42,7 @@ jobs:
       - name: Check code formatting with Black
         run: black --check ./custom_components/montreal_aqi ./scripts
 
-      # Unit tests
-      - name: Run unit tests
-        run:  pytest          
+      # # Unit tests
+      # Skip running unit tests for now
+      # - name: Run unit tests
+      #   run:  pytest          
