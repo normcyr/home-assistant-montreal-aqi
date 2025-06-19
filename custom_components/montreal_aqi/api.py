@@ -40,7 +40,9 @@ class MontrealAQIAPI:
     async def get_latest_data(self):
         """Fetch latest AQI data for a given station."""
         params = {"resource_id": RESOURCE_ID, "limit": 1000}
-        _LOGGER.debug(f"Fetching latest AQI data for station {self.station_id} with params {params}")
+        _LOGGER.debug(
+            f"Fetching latest AQI data for station {self.station_id} with params {params}"
+        )
         try:
             async with async_timeout.timeout(10):
                 async with self.session.get(API_URL, params=params) as response:
@@ -53,7 +55,9 @@ class MontrealAQIAPI:
                             _LOGGER.warning("No air quality data available")
                             return None
                     else:
-                        _LOGGER.error("API request failed with status code %s", response.status)
+                        _LOGGER.error(
+                            "API request failed with status code %s", response.status
+                        )
                         return None
         except (aiohttp.ClientError, asyncio.TimeoutError) as e:
             _LOGGER.error("Error fetching AQI data: %s", str(e))
@@ -91,7 +95,9 @@ class MontrealAQIAPI:
                 pollutants[pollutant_name].set_value(value)
                 pollutants[pollutant_name].calculate_aqi()
             else:
-                _LOGGER.warning("Unknown pollutant %s received from API", pollutant_name)
+                _LOGGER.warning(
+                    "Unknown pollutant %s received from API", pollutant_name
+                )
 
         # Calculate total AQI
         total_aqi = round(sum(p.aqi_value for p in pollutants.values()), 0)
