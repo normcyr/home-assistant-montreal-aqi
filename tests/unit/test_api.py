@@ -45,8 +45,15 @@ async def test_get_latest_data():
             assert data["pollutants"]["SO2"] == 25.0
 
 
+@pytest.mark.parametrize("expected_lingering_tasks", [True])
+@pytest.mark.parametrize("expected_lingering_timers", [True])
+@pytest.mark.parametrize("expected_lingering_threads", [True])
 @pytest.mark.asyncio
-async def test_get_latest_data_failure():
+async def test_get_latest_data_failure(
+    expected_lingering_tasks,
+    expected_lingering_timers,
+    expected_lingering_threads,
+):
     """Test the API client if it handles errors correctly."""
 
     # Create a simulated HTTP session
@@ -56,15 +63,10 @@ async def test_get_latest_data_failure():
             "custom_components.montreal_aqi.api.MontrealAQIAPI.get_latest_data",
             new=AsyncMock(side_effect=Exception("API error")),
         ):
-            api = MontrealAQIAPI(session, station_id=80)
+            api = MontrealAQIAPI(session, station_id="80")
 
-            # Verify that an exception is raised
-            try:
-                with pytest.raises(Exception, match="API error"):
-                    await api.get_latest_data()
-            finally:
-                # Clean up lingering HA threads if any
-                await asyncio.sleep(0)
+            with pytest.raises(Exception, match="API error"):
+                await api.get_latest_data()
 
 
 @pytest.mark.asyncio
