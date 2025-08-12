@@ -75,6 +75,7 @@ class AQISensor(CoordinatorEntity, SensorEntity):
         self._attr_unit_of_measurement = "AQI"
         self._attr_suggested_display_precision = 0
         self._attr_device_info = device_info
+        self._attr_state_class = "measurement"
 
         _LOGGER.debug("Initialized Air Quality Sensor for station %s", station_id)
 
@@ -127,7 +128,19 @@ class PollutantSensor(CoordinatorEntity, SensorEntity):
                 self.pollutant,
                 self.station_id,
             )
+            return None
+        else:
+            _LOGGER.debug(
+                "Pollutant %s at station %s state value: %s",
+                self.pollutant,
+                self.station_id,
+                pollutant_value,
+            )
         return pollutant_value
+
+    @property
+    def unit_of_measurement(self):
+        return POLLUTANT_UNITS.get(self.pollutant, "")
 
 
 class AirQualityCategorySensor(CoordinatorEntity, SensorEntity):

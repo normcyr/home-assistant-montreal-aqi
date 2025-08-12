@@ -119,11 +119,10 @@ class MontrealAQIAPI:
 
 async def get_list_stations():
     params = {"resource_id": LIST_RESOURCE_ID}
-    _LOGGER.info("Fetching list of monitoring stations...")
 
     async with aiohttp.ClientSession() as session:
         try:
-            logging.info("Fetching list of monitoring stations...")
+            logging.debug("Fetching list of monitoring stations...")
             async with session.get(API_URL, params=params) as response:
                 response.raise_for_status()
 
@@ -143,8 +142,8 @@ async def get_list_stations():
                             _LOGGER.debug("Adding station info: %s", station_info)
                             list_stations.append(station_info)
 
-                    _LOGGER.info("Found a list of monitoring stations.")
-                    _LOGGER.debug(f"List of stations: {list_stations}")
+                    _LOGGER.debug("Found a list of monitoring stations.")
+                    _LOGGER.info(f"List of stations: {list_stations}")
                     return list_stations
                 else:
                     _LOGGER.error(f"API Error: {response.status}")

@@ -125,7 +125,9 @@ async def test_valid_api_url():
             await api.get_latest_data()
 
             # Check that the correct URL and parameters are used
-            mock_get.assert_called_with(API_URL, params={"resource_id": RESOURCE_ID, "limit": 1000})
+            mock_get.assert_called_with(
+                API_URL, params={"resource_id": RESOURCE_ID, "limit": 1000}
+            )
 
 
 @pytest.mark.asyncio
@@ -182,7 +184,13 @@ async def test_parse_data():
     """Test if the data parsing logic works for various input scenarios."""
 
     # Simulate complete data
-    complete_data = {"result": {"records": [{"stationId": 80, "polluant": "CO", "valeur": "0.4", "heure": "12"}]}}
+    complete_data = {
+        "result": {
+            "records": [
+                {"stationId": 80, "polluant": "CO", "valeur": "0.4", "heure": "12"}
+            ]
+        }
+    }
 
     async with aiohttp.ClientSession() as session:
         api = MontrealAQIAPI(session, station_id=80)
