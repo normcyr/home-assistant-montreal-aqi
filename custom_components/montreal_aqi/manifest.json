@@ -8,6 +8,6 @@
     "iot_class": "cloud_polling",
     "issue_tracker": "https://github.com/normcyr/home-assistant-montreal-aqi/issues",
     "loggers": ["custom_components.montreal_aqi"],
-    "requirements": ["aiohttp"],
-    "version": "0.3.0"
+    "requirements": ["aiohttp", "montreal-aqi-api @ git+https://github.com/normcyr/montreal-aqi-api@v0.4.0"],
+    "version": "0.4.0"
   }

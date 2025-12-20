@@ -5,7 +5,8 @@ import requests
 
 # API URL and Resource ID
 API_URL = "https://donnees.montreal.ca/api/3/action/datastore_search"
-RESOURCE_ID = "a25fdea2-7e86-42ac-8301-ca77db3ff17e"
+# RESOURCE_ID = "a25fdea2-7e86-42ac-8301-ca77db3ff17e"
+RESOURCE_ID = "f4eca3bf-5ded-4d3c-a8dc-ed42486498f3"
 STATION_ID = None  # Change to your desired station
 LIST_RESOURCE_ID = "29db5545-89a4-4e4a-9e95-05aa6dc2fd80"
 
@@ -39,9 +40,7 @@ class Pollutant:
         if self.value is not None and self.ref_value is not None:
             self.aqi_value = (self.value / self.ref_value) * 50
         else:
-            raise ValueError(
-                "Both value and ref_value must be set before calculating AQI."
-            )
+            raise ValueError("Both value and ref_value must be set before calculating AQI.")
 
     def __repr__(self):
         return (
