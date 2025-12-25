@@ -1,5 +1,6 @@
 {
-    "name": "Montreal AQI",
-    "country": "CA",
-    "render_readme": true
+  "name": "Montreal Air Quality Index",
+  "content_in_root": false,
+  "country": ["CA"],
+  "homeassistant": "2025.5.0"
 }

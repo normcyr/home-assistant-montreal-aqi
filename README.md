@@ -1,174 +1,101 @@
-# Air Quality Index (AQI) Integration for Home Assistant
+# Montreal Air Quality Index (AQI)
 
 ![Logo of the project](docs/montreal_aqi_logo.png)
 
-This project provides a Home Assistant integration to retrieve and display real-time Air Quality Index (AQI) data from a monitoring station on the island of Montréal from open data of the Réseau de surveillance de la qualité de l'air (RSQA) [API](https://donnees.montreal.ca/dataset/rsqa-indice-qualite-air/resource/a25fdea2-7e86-42ac-8301-ca77db3ff17e). 
+A Home Assistant custom integration that exposes **air quality data for the City of Montréal (Québec, Canada)** using official open data.
 
-It calculates AQI values based on pollutants (SO2, CO, O3, NO2, PM) and exposes the results as a sensor with attributes for each pollutant level, including the station's timestamp.
+This integration provides a qualitative **Air Quality** entity, numeric **AQI**, and detailed **pollutant sensors**, powered by the `montreal-aqi-api` Python library (more information about this library [here](https://github.com/normcyr/montreal-aqi-api)).
 
-List and location of the stations can be found [here](https://donnees.montreal.ca/dataset/rsqa-liste-des-stations/resource/29db5545-89a4-4e4a-9e95-05aa6dc2fd80).
+---
 
-## Features
+## ✨ Features
 
-- Fetch AQI data from a public API ([Montréal’s air quality dataset](https://donnees.montreal.ca/dataset/rsqa-indice-qualite-air/resource/a25fdea2-7e86-42ac-8301-ca77db3ff17e)).
-- Display total AQI value and individual pollutant levels as attributes.
-- Supports a configurable station ID via Home Assistant's user interface.
+- Official Montréal RSQA AQI data
+- Config flow (UI-based setup)
+- Aggregated Air Quality entity
+- Numeric AQI sensor
+- Pollutant-level sensors (PM2.5, O₃, NO₂, SO₂, CO)
+- Robust coordinator-based architecture
+- Designed for dashboards and automations
 
-## Requirements
+---
 
-- Home Assistant instance.
-- Internet connection to fetch real-time AQI data.
+## 📦 Installation
 
-## Installation
-
-### Via HACS
+### Option 1 — HACS (recommended)
 
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Normcyr&repository=home-assistant-montreal-aqi&category=integration)
 
-### Manually
+1. Open **HACS** in Home Assistant
+2. Go to **Integrations**
+3. Search for **Montreal Air Quality Index**
+4. Install
+5. Restart Home Assistant
 
-#### 1. Download the Repository
+### Option 2 — Manual
 
-Clone this repository.
+1. Download or clone this repository
+2. Copy `custom_components/montreal_aqi` into:
 
-```bash
-git clone https://github.com/normcyr/home-assistant-montreal-aqi.git
-```
+   ```bash
+   config/custom_components/
+   ```
 
-And copy the folder `custom_components/montreal_aqi` into the `custom_components` folder of your Home Assistant instance.
+3. Restart Home Assistant
 
-#### 2. Configuration in Home Assistant
+---
 
-The integration can then be added directly via the Home Assistant UI:
+## ⚙️ Configuration
 
-- Go to Configuration > Integrations.
-- Search for Montreal AQI and click on it.
-- Follow the on-screen instructions to set up the integration by selecting the desired air quality monitoring station (available from the Montréal dataset).
+1. Go to **Settings → Devices & Services**
+2. Click **Add Integration**
+3. Search for **Montreal Air Quality Index**
+4. Pick your air quality monitoring station
+5. Confirm
 
-#### 3. Restart Home Assistant
+The integration will start polling automatically.
 
-To apply the changes, restart Home Assistant:
+---
 
-```bash
-# In the Home Assistant UI:
- Developer tools > Restart
-```
+## 📊 Entities Created
 
-## Usage
+| Entity Type | Description |
+|-------------|-------------|
+| Air Quality | Qualitative AQI state (Good / Acceptable / Bad) |
+| Sensor | Numeric AQI |
+| Sensors | Individual pollutant concentrations |
+| Sensor | Dominant pollutant |
 
-After installation, the integration will create sensors based on the available air quality data for the selected station.
+All entities are grouped under a single device per station.
 
-### Sensors Created
+---
 
-1. AQI Sensor (`sensor.aqi_station_<station_id>`)
-  
-- Reports the overall Air Quality Index (AQI) value.
+## 🧠 AQI Interpretation
 
-2. Air Quality Category Sensor (`sensor.air_quality_category_station_<station_id>`)
+| AQI Range | Meaning |
+|-----------|---------|
+| 0–25 | Good |
+| 26–50 | Acceptable |
+| 51+ | Bad |
 
-- Displays a textual representation of air quality (e.g., "Good", "Acceptable", "Bad").
+---
 
-3. Individual pollutant Sensors (only if data is available)
-
-- Sensors are only created for pollutants that have reported values. Example: `sensor.no2_level_station_<station_id>`
-
-### Dashboard Examples
+## Home Assistant dashboard Examples
 
 You can use these sensors in your dashboard with different Lovelace cards. 
 
-For instance, to display AQI as a gauge card and colour it based on the severity:
+*WIP*
 
-```yaml
-type: gauge
-entity: sensor.aqi_station_<station_id>
-min: 0
-max: 75
-severity:
-  green: 0
-  yellow: 25
-  red: 50
-```
+---
 
-To display individual pollutants (SO₂ and ozone in this case):
+## 🐞 Issues & Support
 
-```yaml
-type: entities
-title: Air Quality Details
-entities:
-  - entity: sensor.aqi_station_<station_id>
-    name: Air Quality Index
-  - entity: sensor.air_quality_category_station_<station_id>
-    name: Air quality category
-  - entity: sensor.so2_level_monitoring_station_<station_id>
-    name: Sulfur Dioxide (SO₂)
-  - entity: sensor.o3_level_monitoring_station_<station_id>
-    name: Ozone (O₃)
-```
+- Bug reports: https://github.com/normcyr/home-assistant-montreal-aqi/issues
+- Feature requests welcome
 
-## Command Line Testing
+---
 
-To test the API locally:
-
-1. Clone the repository to your local machine.
-2. Install required dependencies:
-
-```bash
-pip install -r requirements.txt
-```
-
-3. Run the Python script `test_api.py` found in the `scripts` folder to simulate fetching AQI data and testing the calculations:
-
-```bash
-python scripts/test_api.py
-```
-
-More details are found in the [README](scripts/README.md) file associated with the script.
-
-### Contributing
-
-We welcome contributions! To contribute:
-
-1. Fork this repository.
-2. Create a feature branch (`git checkout -b feature-branch`).
-3. Commit your changes (`git commit -am 'Add new feature'`).
-4. Push to your branch (`git push origin feature-branch`).
-5. Open a pull request.
-
-## Technical Data
-
-### Reference Values for Pollutants
-
-The following table lists the reference values for each pollutant used in calculating the Air Quality Index (AQI) for the station data:
-
-| Pollutant     | Full Name               | Reference Value |
-|---------------|-------------------------|-----------------|
-| SO₂           | Sulfur Dioxide          | 500 µg/m3       |
-| CO            | Carbon Monoxide         | 35 mg/m3        |
-| O₃            | Ozone                   | 160 µg/m3       |
-| NO₂           | Nitrogen Dioxide        | 400 µg/m3       |
-| PM (PM2.5)    | Particulate Matter      | 35 µg/m3        |
-
-### AQI Calculation Method
-
-The AQI for each pollutant is calculated using the following formula, as described [here](https://donnees.montreal.ca/dataset/rsqa-indice-qualite-air#methodology):
-
-![AQI Equation](docs/aqi_equation.png)
-
-where:
-
-- `measured_value` is the concentration of the pollutant in µg/m³ measured at a given time.
-- `reference_value` is the predefined reference value for the pollutant (as listed in the table above).
-- `AQI` is the calculated air quality index value for that pollutant.
-
-The AQI contribution for each pollutant is calculated individually using the formula above. The reported AQI value at a specific station is the highest of the sub-indices calculated for the pollutants continuously measured at that station. It provides an overall indication of air quality, helping to assess the overall health impact based on the measured pollutants.
-
-The air quality index (AQI) value is defined as follows:
-
-- Good: From 1 to 25
-- Acceptable: From 26 to 50
-- Poor: 51 or higher
-
-## Licence
+## 📜 License
 
 This project is licensed under the MIT Licence. See the [LICENSE](LICENSE) file for details.
 

@@ -1,66 +1,76 @@
+from __future__ import annotations
+
 import logging
+from typing import Any
 
 import voluptuous as vol
 from homeassistant import config_entries
+from homeassistant.helpers import selector
+from homeassistant.helpers.selector import SelectOptionDict
 
-from .api import get_list_stations
-from .const import CONF_STATION, DOMAIN
+from .api import MontrealAQIApi
+from .const import CONF_STATION_ID, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
 
 class MontrealAQIConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-    """Handle the config flow for Montreal AQI integration."""
+    """Config flow for Montreal AQI integration."""
 
-    async def async_step_user(self, user_input=None):
-        """Handle the initial user input."""
-        errors = {}
+    VERSION = 1
 
-        try:
-            # Fetch the list of stations
-            list_stations = await get_list_stations()
-            if not list_stations:
-                return self.async_abort(reason="no_stations")
+    def __init__(self) -> None:
+        self._stations: dict[str, dict[str, Any]] = {}
 
-            # Convert station list into a dictionary for selection
-            station_options = {
-                station[
-                    "station_id"
-                ]: f"Station {station['station_id']} - {station['station_name']} ({station['station_borough']})"
-                for station in list_stations
-            }
-
-        except Exception as e:
-            self.hass.helpers.event.log_error(f"Error fetching stations: {e}")
-            return self.async_abort(reason="api_error")
-
-        # Ensure station_options exists before handling user input
+    async def async_step_user(self, user_input: dict[str, Any] | None = None):
         if user_input is not None:
-            _LOGGER.info(station_options)
-            selected_station_name = user_input[CONF_STATION]
+            station_id = user_input[CONF_STATION_ID]
+            station = self._stations[station_id]
 
-            # Look for the selected station name and retrieve the corresponding station ID
-            selected_station_id = next(
-                (
-                    station_id
-                    for station_id, name in station_options.items()
-                    if name == selected_station_name
-                ),
-                None,
+            _LOGGER.debug(
+                "Config flow: selected station %s (%s)",
+                station_id,
+                station["name"],
             )
 
-            if selected_station_id is None:
-                errors["base"] = "invalid_station"
-            else:
-                return self.async_create_entry(
-                    title=selected_station_name,
-                    data={"station_id": selected_station_id},
-                )
+            return self.async_create_entry(
+                title=station["name"],
+                data={CONF_STATION_ID: station_id},
+            )
+
+        api = MontrealAQIApi(self.hass)
+
+        try:
+            stations = await api.async_list_stations()
+        except Exception as err:
+            _LOGGER.error("Config flow: cannot fetch stations: %s", err)
+            return self.async_abort(reason="cannot_connect")
+
+        if not stations:
+            return self.async_abort(reason="no_stations")
+
+        self._stations = {s["station_id"]: s for s in stations}
+
+        options: list[SelectOptionDict] = [
+            SelectOptionDict(
+                value=station_id,
+                label=f"{station_id} — {station['name']}",
+            )
+            for station_id, station in self._stations.items()
+        ]
+
+        _LOGGER.debug("Config flow: presenting %d stations", len(options))
 
         return self.async_show_form(
             step_id="user",
             data_schema=vol.Schema(
-                {vol.Required(CONF_STATION): vol.In(list(station_options.values()))}
+                {
+                    vol.Required(CONF_STATION_ID): selector.SelectSelector(
+                        selector.SelectSelectorConfig(
+                            options=options,
+                            mode=selector.SelectSelectorMode.DROPDOWN,
+                        )
+                    )
+                }
             ),
-            errors=errors,
         )
