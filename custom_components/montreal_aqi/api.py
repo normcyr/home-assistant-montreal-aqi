@@ -3,9 +3,8 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from montreal_aqi_api import get_station_aqi, list_open_stations
-
 from homeassistant.core import HomeAssistant
+from montreal_aqi_api import get_station_aqi, list_open_stations
 
 _LOGGER = logging.getLogger(__name__)
 
