@@ -80,11 +80,13 @@ All entities are grouped under a single device per station.
 
 ---
 
-## Home Assistant dashboard Examples
+## Home Assistant dashboards
 
-You can use these sensors in your dashboard with different Lovelace cards. 
+This integration exposes Air Quality and pollutant sensors that can be used
+in Home Assistant dashboards.
 
-*WIP*
+📘 See [DOCUMENTATION.md](DOCUMENTATION.md) for Lovelace card examples
+(history graphs, pollutant overlays, and tile dashboards).
 
 ---
 
