@@ -1,48 +1,48 @@
-name: Continuous integration
+name: CI
 
 on:
-  push:
   pull_request:
+    branches: [main]
 
 jobs:
-  test:
-    name: Run Lint
+  quality:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ["3.12"] 
-
     steps:
-      # Checkout the code
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      # Set up Python
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
-          
+          python-version: "3.13"
 
-      # Install dependencies
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install flake8 black
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          if [ -f requirements_test.txt ]; then pip install -r requirements_test.txt; fi
+      - name: Install UV tools
+        run: pip install uv
 
-      # Linting (flake8, black)
-      - name: Lint with flake8
-        run: |
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      - name: Install deps
+        run: uv sync
 
-      - name: Check code formatting with Black
-        run: black --check ./custom_components/montreal_aqi ./scripts
+      - name: Lint
+        run: uv run ruff check custom_components/
 
-      # # Unit tests
-      # Skip running unit tests for now
-      # - name: Run unit tests
-      #   run:  pytest          
+      - name: Format check
+        run: uv run ruff format --check custom_components/
+
+      - name: Type check
+        run: uv run mypy custom_components/montreal_aqi
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install UV tools
+        run: pip install uv
+
+      - name: Install deps
+        run: uv sync
+
+      - name: Run tests
+        run: uv run pytest --cov=custom_components.montreal_aqi --cov-report=term -v

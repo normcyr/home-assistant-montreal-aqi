@@ -1,5 +1,8 @@
 {
-    "name": "Montreal AQI",
-    "country": "CA",
-    "render_readme": true
+  "name": "Montreal Air Quality Index",
+  "content": "Integration",
+  "min_homeassistant": "2025.5.0",
+  "render_readme": true,
+  "domains": ["sensor", "air_quality"],
+  "tags": ["Air Quality", "AQI", "Montreal"]
 }

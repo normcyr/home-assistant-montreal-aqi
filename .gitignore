@@ -3,9 +3,12 @@ __pycache__/
 .env
 .vscode/
 .idea/
+.pytest_cache/
 
+venv/
 custom_components_test/
 
 .DS_Store
 
 commit_notes.md
+*.log

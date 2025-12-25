@@ -1,32 +1,87 @@
+from datetime import timedelta
+from typing import Any
+
+from homeassistant.components.sensor import (
+    SensorDeviceClass,
+    SensorEntityDescription,
+    SensorStateClass,
+)
+from homeassistant.const import CONCENTRATION_MICROGRAMS_PER_CUBIC_METER
+
 DOMAIN = "montreal_aqi"
+PLATFORMS = ["air_quality", "sensor"]
 
 CONF_STATION_ID = "station_id"
+CONF_STATION_NAME = "station_name"
 
-DEFAULT_NAME = "Montreal AQI"
+# UPDATE_INTERVAL = timedelta(minutes=30) # production
+UPDATE_INTERVAL = timedelta(minutes=5)  # development/testing
 
-UPDATE_INTERVAL_MINUTES = 10
+AQI_DESCRIPTION = SensorEntityDescription(
+    key="aqi",
+    name="Air Quality Index",
+    device_class=SensorDeviceClass.AQI,
+    state_class=SensorStateClass.MEASUREMENT,
+    icon="mdi:weather-hazy",
+)
+AQI_LEVEL_DESCRIPTION = SensorEntityDescription(
+    key="iqa_level",
+    name="Air Quality",
+    device_class=SensorDeviceClass.ENUM,
+    options=["Good", "Acceptable", "Bad"],
+    icon="mdi:checkbox-marked-circle-outline",
+)
 
-# from homeassistant.const import (
-#     CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
-#     CONCENTRATION_PARTS_PER_BILLION,
-#     CONCENTRATION_PARTS_PER_MILLION,
-# )
+DEVICE_CLASS_MAP: dict[str, dict[str, Any]] = {
+    "PM2.5": {
+        "key": "pm25",
+        "name": "PM2.5",
+        "device_class": SensorDeviceClass.PM25,
+        "unit": CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
+        "icon": "mdi:blur",
+    },
+    "PM10": {
+        "key": "pm10",
+        "name": "PM10",
+        "device_class": SensorDeviceClass.PM10,
+        "unit": CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
+        "icon": "mdi:dots-grid",
+    },
+    "NO2": {
+        "key": "no2",
+        "name": "NO₂",
+        "device_class": SensorDeviceClass.NITROGEN_DIOXIDE,
+        "unit": CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
+        "icon": "mdi:chemical-weapon",
+    },
+    "O3": {
+        "key": "o3",
+        "name": "Ozone",
+        "device_class": SensorDeviceClass.OZONE,
+        "unit": CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
+        "icon": "mdi:weather-hazy",
+    },
+    "SO2": {
+        "key": "so2",
+        "name": "SO₂",
+        "device_class": SensorDeviceClass.SULPHUR_DIOXIDE,
+        "unit": CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
+        "icon": "mdi:smog",
+    },
+    "CO": {
+        "key": "co",
+        "name": "CO",
+        "device_class": SensorDeviceClass.CO,
+        "unit": CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
+        "icon": "mdi:skull-crossbones",
+    },
+}
 
-# DOMAIN = "montreal_aqi"
-# CONF_STATION = "Montreal air quality monitoring station"
-# CONF_STATION_ID = "station_id"
+PPB_TO_UGM3 = {
+    "O3": 48.00 / 24.45,
+    "NO2": 46.01 / 24.45,
+    "SO2": 64.07 / 24.45,
+    "CO": 28.01 / 24.45,
+}
 
-# POLLUTANTS = ["O3", "PM", "NO2", "SO2", "CO"]
-# REF_VALUES = {"SO2": 500, "CO": 35, "O3": 160, "NO2": 400, "PM": 35}
-# AQI_SENSOR = "AQI"
-
-
-# POLLUTANT_UNITS = {
-#     "O3": CONCENTRATION_PARTS_PER_BILLION,  # Ozone (O3) in ppb
-#     "PM": CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,  # Particulate Matter (PM2.5/PM10) in µg/m³
-#     "NO2": CONCENTRATION_PARTS_PER_BILLION,  # Nitrogen Dioxide (NO2) in ppb
-#     "SO2": CONCENTRATION_PARTS_PER_BILLION,  # Sulfur Dioxide (SO2) in ppb
-#     "CO": CONCENTRATION_PARTS_PER_MILLION,  # Carbon Monoxide (CO) in ppm
-# }
-
-# UPDATE_INTERVAL = 600
+# DEFAULT_CONCENTRATION_UNIT = "µg/m³"
