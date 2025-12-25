@@ -1,7 +1,6 @@
 {
   "name": "Montreal Air Quality Index",
   "content_in_root": false,
-  "render_readme": true,
   "country": ["CA"],
   "homeassistant": "2025.5.0"
 }
