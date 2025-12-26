@@ -14,8 +14,8 @@ PLATFORMS = ["air_quality", "sensor"]
 CONF_STATION_ID = "station_id"
 CONF_STATION_NAME = "station_name"
 
-# UPDATE_INTERVAL = timedelta(minutes=30) # production
-UPDATE_INTERVAL = timedelta(minutes=5)  # development/testing
+UPDATE_INTERVAL = timedelta(minutes=30) # production
+# UPDATE_INTERVAL = timedelta(minutes=5)  # development/testing
 
 AQI_DESCRIPTION = SensorEntityDescription(
     key="aqi",
