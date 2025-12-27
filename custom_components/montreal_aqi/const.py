@@ -14,7 +14,7 @@ PLATFORMS = ["air_quality", "sensor"]
 CONF_STATION_ID = "station_id"
 CONF_STATION_NAME = "station_name"
 
-UPDATE_INTERVAL = timedelta(minutes=30) # production
+UPDATE_INTERVAL = timedelta(minutes=30)  # production
 # UPDATE_INTERVAL = timedelta(minutes=5)  # development/testing
 
 AQI_DESCRIPTION = SensorEntityDescription(
@@ -83,5 +83,3 @@ PPB_TO_UGM3 = {
     "SO2": 64.07 / 24.45,
     "CO": 28.01 / 24.45,
 }
-
-# DEFAULT_CONCENTRATION_UNIT = "µg/m³"

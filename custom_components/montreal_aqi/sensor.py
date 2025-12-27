@@ -11,6 +11,7 @@ from homeassistant.components.sensor import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo, EntityCategory
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
     AQI_DESCRIPTION,
@@ -51,10 +52,10 @@ async def async_setup_entry(
             )
         )
 
-    async_add_entities(sensors)
+    async_add_entities(sensors, update_before_add=True)
 
 
-class MontrealAQIBaseEntity(SensorEntity):
+class MontrealAQIBaseEntity(CoordinatorEntity, SensorEntity):
     _attr_should_poll = False
 
     def __init__(
@@ -62,7 +63,7 @@ class MontrealAQIBaseEntity(SensorEntity):
         coordinator: MontrealAQICoordinator,
         entry: ConfigEntry,
     ) -> None:
-        self.coordinator = coordinator
+        super().__init__(coordinator)
         self.entry = entry
         self.station_id = entry.data[CONF_STATION_ID]
 

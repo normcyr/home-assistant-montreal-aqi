@@ -1,15 +1,13 @@
 import sys
 from pathlib import Path
-
 from unittest.mock import AsyncMock
 
-from custom_components.montreal_aqi.const import CONF_STATION_ID, DOMAIN
 import pytest
-from pytest_homeassistant_custom_component.common import MockConfigEntry
-
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 
+from custom_components.montreal_aqi.const import CONF_STATION_ID, DOMAIN
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.append(str(ROOT))

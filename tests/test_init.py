@@ -1,9 +1,9 @@
 from unittest.mock import AsyncMock, patch
 
-from custom_components.montreal_aqi.const import DOMAIN
-
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import HomeAssistant
+
+from custom_components.montreal_aqi.const import DOMAIN
 
 
 async def test_async_setup_entry(
