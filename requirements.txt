@@ -1,2 +1,2 @@
 requests
-montreal-aqi-api==0.4.1
+montreal-aqi-api==0.4.2
