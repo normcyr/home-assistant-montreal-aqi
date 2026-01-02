@@ -57,5 +57,5 @@ class MontrealAQICoordinator(DataUpdateCoordinator[dict[str, Any]]):
             "aqi": data.get("aqi"),
             "dominant_pollutant": data.get("dominant_pollutant"),
             "pollutants": data.get("pollutants", {}),
-            "timestamp": dt_util.utcnow(),
+            "timestamp": data.get("timestamp"),
         }

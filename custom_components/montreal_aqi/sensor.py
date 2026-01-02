@@ -10,8 +10,13 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity import DeviceInfo, EntityCategory
+from homeassistant.helpers.entity import (
+    DeviceInfo,
+    EntityCategory,
+    SensorDeviceClass,
+)
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.util import dt as dt_util
 
 from .const import (
     AQI_DESCRIPTION,
@@ -30,11 +35,13 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities,
 ) -> None:
+    """Set up Montreal AQI sensors from a config entry."""
     coordinator: MontrealAQICoordinator = hass.data[DOMAIN][entry.entry_id]
 
     sensors: list[SensorEntity] = [
         MontrealAQISensor(coordinator, entry, AQI_DESCRIPTION),
         MontrealAQISensor(coordinator, entry, AQI_LEVEL_DESCRIPTION),
+        MontrealAQITimestampSensor(coordinator, entry),
     ]
 
     pollutants = coordinator.data.get("pollutants", {})
@@ -56,6 +63,8 @@ async def async_setup_entry(
 
 
 class MontrealAQIBaseEntity(CoordinatorEntity, SensorEntity):
+    """Base entity for all Montreal AQI sensors."""
+
     _attr_should_poll = False
 
     def __init__(
@@ -81,7 +90,9 @@ class MontrealAQIBaseEntity(CoordinatorEntity, SensorEntity):
         )
 
 
-class MontrealAQISensor(MontrealAQIBaseEntity, SensorEntity):
+class MontrealAQISensor(MontrealAQIBaseEntity):
+    """AQI and AQI level sensors."""
+
     def __init__(
         self,
         coordinator: MontrealAQICoordinator,
@@ -90,12 +101,12 @@ class MontrealAQISensor(MontrealAQIBaseEntity, SensorEntity):
     ) -> None:
         super().__init__(coordinator, entry)
         self.entity_description = description
-        station = entry.data[CONF_STATION_ID]
 
+        station = entry.data[CONF_STATION_ID]
         self._attr_unique_id = f"{entry.entry_id}_station_{station}_{description.key}"
         self._attr_name = f"Station {station} {description.name}"
 
-        if self.entity_description is AQI_LEVEL_DESCRIPTION:
+        if description is AQI_LEVEL_DESCRIPTION:
             self._attr_entity_registry_visible_default = False
 
     @property
@@ -120,13 +131,13 @@ class MontrealAQISensor(MontrealAQIBaseEntity, SensorEntity):
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         if self.entity_description is AQI_LEVEL_DESCRIPTION:
-            return {
-                "dominant_pollutant": self.coordinator.data.get("dominant_pollutant")
-            }
+            return {"dominant_pollutant": self.coordinator.data.get("dominant_pollutant")}
         return {}
 
 
 class MontrealAQIPollutantSensor(MontrealAQIBaseEntity):
+    """Individual pollutant concentration sensor."""
+
     _attr_state_class = SensorStateClass.MEASUREMENT
     _attr_entity_category = EntityCategory.DIAGNOSTIC
     _attr_suggested_display_precision = 1
@@ -136,10 +147,9 @@ class MontrealAQIPollutantSensor(MontrealAQIBaseEntity):
         coordinator: MontrealAQICoordinator,
         entry: ConfigEntry,
         code: str,
-        meta: dict,
+        meta: dict[str, Any],
     ) -> None:
         super().__init__(coordinator, entry)
-
         self.code = code
 
         self.entity_description = SensorEntityDescription(
@@ -161,3 +171,25 @@ class MontrealAQIPollutantSensor(MontrealAQIBaseEntity):
 
         value = pollutant.get("concentration")
         return float(value) if value is not None else None
+
+
+class MontrealAQITimestampSensor(MontrealAQIBaseEntity):
+    """Timestamp of the last AQI measurement."""
+
+    _attr_device_class = SensorDeviceClass.TIMESTAMP
+
+    def __init__(
+        self,
+        coordinator: MontrealAQICoordinator,
+        entry: ConfigEntry,
+    ) -> None:
+        super().__init__(coordinator, entry)
+
+        station = entry.data[CONF_STATION_ID]
+        self._attr_unique_id = f"{entry.entry_id}_station_{station}_timestamp"
+        self._attr_name = f"Station {station} Measurement Time"
+
+    @property
+    def native_value(self):
+        ts = self.coordinator.data.get("timestamp")
+        return dt_util.parse_datetime(ts) if ts else None
