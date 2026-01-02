@@ -10,11 +10,7 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity import (
-    DeviceInfo,
-    EntityCategory,
-    SensorDeviceClass,
-)
+from homeassistant.helpers.entity import DeviceInfo, EntityCategory, SensorDeviceClass
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.util import dt as dt_util
 
@@ -131,7 +127,9 @@ class MontrealAQISensor(MontrealAQIBaseEntity):
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         if self.entity_description is AQI_LEVEL_DESCRIPTION:
-            return {"dominant_pollutant": self.coordinator.data.get("dominant_pollutant")}
+            return {
+                "dominant_pollutant": self.coordinator.data.get("dominant_pollutant")
+            }
         return {}
 
 
