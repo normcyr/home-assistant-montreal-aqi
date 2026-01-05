@@ -1,0 +1,11 @@
+homeassistant:
+  name: HA Dev
+  unit_system: metric
+  time_zone: America/Toronto
+
+logger:
+  default: info
+  logs:
+    custom_components.montreal_aqi: debug
+
+config:

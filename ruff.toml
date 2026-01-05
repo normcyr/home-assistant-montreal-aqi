@@ -1,0 +1,51 @@
+# =========================
+# Ruff configuration
+# =========================
+
+target-version = "py312"
+line-length = 88
+
+exclude = [
+  ".git",
+  ".venv",
+  "venv",
+  "__pycache__",
+  ".pytest_cache",
+  ".mypy_cache",
+  ".ruff_cache",
+  "ha_config",
+  "tests",
+]
+
+[lint]
+select = [
+  "E",    # pycodestyle errors
+  "W",    # pycodestyle warnings
+  "F",    # pyflakes
+  "I",    # isort
+  "B",    # flake8-bugbear
+  "UP",   # pyupgrade
+  "SIM",  # flake8-simplify
+  "C4",   # flake8-comprehensions
+  "TCH",  # flake8-type-checking
+  "ANN",
+]
+
+ignore = [
+  "E501",   # line length (géré par formatter)
+  "B905",   # strict zip
+]
+
+fixable = ["ALL"]
+unfixable = []
+
+[lint.isort]
+known-first-party = ["custom_components"]
+
+[lint.flake8-type-checking]
+strict = true
+
+[format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
