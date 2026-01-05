@@ -1,0 +1,90 @@
+{
+  "name": "Montreal AQI Custom Integration for Home Assistant Dev",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "charliermarsh.ruff",
+        "esbenp.prettier-vscode",
+        "redhat.vscode-yaml",
+        "github.vscode-github-actions"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.languageServer": "Pylance",
+        "python.analysis.typeCheckingMode": "strict",
+        "python.analysis.diagnosticMode": "workspace",
+        "python.terminal.activateEnvironment": true,
+
+        "python.linting.enabled": true,
+        "python.linting.ruffEnabled": true,
+
+        "ruff.enable": true,
+        "ruff.importStrategy": "fromEnvironment",
+
+        "[python]": {
+          "editor.defaultFormatter": "charliermarsh.ruff",
+          "editor.formatOnSave": true
+        },
+
+        "files.exclude": {
+          "**/__pycache__": true,
+          "**/.pytest_cache": true,
+          "**/.mypy_cache": true,
+          "**/.ruff_cache": true
+        }
+      }
+    }
+  },
+  "postCreateCommand": "pip install -r requirements_dev.txt",
+  "remoteUser": "vscode"
+}
+
+// {
+//   "name": "Montreal AQI Custom Integration for Home Assistant Dev",
+//   "build": {
+//     "dockerfile": "Dockerfile"
+//   },
+//   "customizations": {
+//     "vscode": {
+//       "extensions": [
+//         "ms-python.python",
+//         "ms-python.vscode-pylance",
+//         "charliermarsh.ruff",
+//         "esbenp.prettier-vscode",
+//         "github.vscode-github-actions",
+//         "redhat.vscode-yaml"
+//       ],
+//       "settings": {
+//         "python.analysis.typeCheckingMode": "strict",
+//         "python.defaultInterpreterPath": "/usr/local/bin/python",
+//         "python.languageServer": "Pylance",
+//         "python.analysis.diagnosticMode": "workspace",
+//         "python.terminal.activateEnvironment": true,
+//         "python.linting.enabled": true,
+//         "python.linting.ruffEnabled": true,
+//         "[python]": {
+//           "editor.defaultFormatter": "charliermarsh.ruff",
+//           "editor.formatOnSave": true
+//         },
+//         "python.testing.pytestEnabled": true,
+//         "python.testing.unittestEnabled": false,
+//         "ruff.enable": true,
+//         "ruff.importStrategy": "fromEnvironment",
+//         "mypy-type-checker.importStrategy": "fromEnvironment",
+//         "files.exclude": {
+//           "**/__pycache__": true,
+//           "**/.pytest_cache": true,
+//           "**/.mypy_cache": true,
+//           "**/.ruff_cache": true
+//         }
+//       }
+//     }
+//   },
+//   "postCreateCommand": "pip install -r requirements_dev.txt",
+//   "remoteUser": "vscode"
+// }

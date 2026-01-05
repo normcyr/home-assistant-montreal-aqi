@@ -1,20 +1,23 @@
 from __future__ import annotations
 
 import logging
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import voluptuous as vol
-from homeassistant import config_entries
+from homeassistant.config_entries import ConfigFlow
 from homeassistant.helpers import selector
 from homeassistant.helpers.selector import SelectOptionDict
 
 from .api import MontrealAQIApi
 from .const import CONF_STATION_ID, DOMAIN
 
+if TYPE_CHECKING:
+    from homeassistant.config_entries import ConfigFlowResult
+
 _LOGGER = logging.getLogger(__name__)
 
 
-class MontrealAQIConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+class MontrealAQIConfigFlow(ConfigFlow, domain=DOMAIN):
     """Config flow for Montreal AQI integration."""
 
     VERSION = 1
@@ -22,7 +25,10 @@ class MontrealAQIConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     def __init__(self) -> None:
         self._stations: dict[str, dict[str, Any]] = {}
 
-    async def async_step_user(self, user_input: dict[str, Any] | None = None):
+    async def async_step_user(
+        self,
+        user_input: dict[str, Any] | None = None,
+    ) -> ConfigFlowResult:
         if user_input is not None:
             station_id = user_input[CONF_STATION_ID]
             station = self._stations[station_id]

@@ -1,12 +1,17 @@
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 
+if TYPE_CHECKING:
+    from homeassistant.config_entries import ConfigEntry
+    from homeassistant.core import HomeAssistant
+    from homeassistant.helpers.entity_platform import AddEntitiesCallback
+
+# TODO: AirQualityEntity is deprecated, migrate to SensorEntity
 from homeassistant.components.air_quality import AirQualityEntity
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
+from homeassistant.const import CONCENTRATION_PARTS_PER_MILLION
 from homeassistant.helpers.device_registry import DeviceInfo
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import CONF_STATION_ID, DOMAIN
@@ -79,9 +84,9 @@ class MontrealAQIAirQualityEntity(
         return "Bad"
 
     @property
-    def unit_of_measurement(self) -> None:
+    def unit_of_measurement(self) -> str:
         """Air quality entity has no unit."""
-        return None
+        return CONCENTRATION_PARTS_PER_MILLION
 
     @property
     def air_quality_index(self) -> int | None:

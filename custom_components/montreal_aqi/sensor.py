@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
@@ -9,9 +9,8 @@ from homeassistant.components.sensor import (
     SensorEntityDescription,
     SensorStateClass,
 )
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity import DeviceInfo, EntityCategory
+from homeassistant.const import EntityCategory
+from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.util import dt as dt_util
 
@@ -22,7 +21,16 @@ from .const import (
     DEVICE_CLASS_MAP,
     DOMAIN,
 )
-from .coordinator import MontrealAQICoordinator
+
+if TYPE_CHECKING:
+    from datetime import datetime
+
+    from homeassistant.config_entries import ConfigEntry
+    from homeassistant.core import HomeAssistant
+    from homeassistant.helpers.entity_platform import AddEntitiesCallback
+
+    from .coordinator import MontrealAQICoordinator
+
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -30,7 +38,7 @@ _LOGGER = logging.getLogger(__name__)
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: ConfigEntry,
-    async_add_entities,
+    async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up Montreal AQI sensors from a config entry."""
     coordinator: MontrealAQICoordinator = hass.data[DOMAIN][entry.entry_id]
@@ -107,7 +115,7 @@ class MontrealAQISensor(MontrealAQIBaseEntity):
             self._attr_entity_registry_visible_default = False
 
     @property
-    def native_value(self) -> Any:
+    def native_value(self) -> str | None:
         data = self.coordinator.data
 
         if self.entity_description.key == "aqi":
@@ -189,6 +197,6 @@ class MontrealAQITimestampSensor(MontrealAQIBaseEntity):
         self._attr_name = f"Station {station} Measurement Time"
 
     @property
-    def native_value(self):
+    def native_value(self) -> datetime | None:
         ts = self.coordinator.data.get("timestamp")
         return dt_util.parse_datetime(ts) if ts else None

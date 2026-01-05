@@ -1,12 +1,65 @@
-__pycache__/
-*.pyc
-.env
-.vscode/
-.idea/
-.pytest_cache/
+# =========================
+# Home Assistant (runtime)
+# =========================
+ha_config/*
+!ha_config/configuration.yaml
 
+
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# Virtual environments
+.venv/
 venv/
-custom_components_test/
+ENV/
+
+# =========================
+# Tests / tooling
+# =========================
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+.cache/
+
+# =========================
+# VS Code / Devcontainer
+# =========================
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# Devcontainer runtime state
+.devcontainer/.env
+.devcontainer/.cache
+
+# =========================
+# OS / Editor noise
+# =========================
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# =========================
+# Secrets
+# =========================
+ha_config/secrets.yaml
+.env
+.env.*
 
 .DS_Store
 

@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import logging
-from typing import Any
+from typing import TYPE_CHECKING, Any, cast
 
-from homeassistant.core import HomeAssistant
+if TYPE_CHECKING:
+    from homeassistant.core import HomeAssistant
+
 from montreal_aqi_api import get_station_aqi, list_open_stations
 
 _LOGGER = logging.getLogger(__name__)
@@ -24,4 +26,4 @@ class MontrealAQIApi:
         station = await self.hass.async_add_executor_job(get_station_aqi, station_id)
         if station is None:
             return None
-        return station.to_dict()
+        return cast("dict[str, Any]", station.to_dict())
