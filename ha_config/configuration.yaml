@@ -1,3 +1,5 @@
+default_config:
+
 homeassistant:
   name: HA Dev
   unit_system: metric

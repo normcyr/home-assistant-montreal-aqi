@@ -9,7 +9,7 @@ from homeassistant.components.sensor import (
 from homeassistant.const import CONCENTRATION_MICROGRAMS_PER_CUBIC_METER
 
 DOMAIN = "montreal_aqi"
-PLATFORMS = ["air_quality", "sensor"]
+PLATFORMS = ["sensor"]
 
 CONF_STATION_ID = "station_id"
 CONF_STATION_NAME = "station_name"
