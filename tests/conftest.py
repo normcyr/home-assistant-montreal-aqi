@@ -5,6 +5,8 @@ from unittest.mock import AsyncMock
 import pytest
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.device_registry import DeviceInfo
+
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.montreal_aqi.const import CONF_STATION_ID, DOMAIN
@@ -47,3 +49,14 @@ def mock_api():
         "pollutants": {},
     }
     return api
+
+@pytest.fixture
+def device_info():
+    def _make(station_id: str):
+        return DeviceInfo(
+            identifiers={("montreal_aqi", station_id)},
+            name=f"Station {station_id}",
+            manufacturer="Ville de Montréal",
+            model="Air Quality Station",
+        )
+    return _make

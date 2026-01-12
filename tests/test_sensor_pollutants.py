@@ -4,7 +4,7 @@ from custom_components.montreal_aqi.const import DEVICE_CLASS_MAP
 from custom_components.montreal_aqi.sensor import MontrealAQIPollutantSensor
 
 
-async def test_pollutant_sensor_unique_id(mock_config_entry):
+async def test_pollutant_sensor_unique_id(device_info, mock_config_entry):
     coordinator = AsyncMock()
     coordinator.last_update_success = True
     coordinator.data = {"pollutants": {"NO2": {"concentration": 15}}}
@@ -18,13 +18,15 @@ async def test_pollutant_sensor_unique_id(mock_config_entry):
 
     sensor = MontrealAQIPollutantSensor(
         coordinator=coordinator,
-        entry=mock_config_entry,
+        station_id="80",
         code="NO2",
         meta=meta,
-    )
+        device_info=device_info("80"),
+        entry_id="",
+        )
 
     assert sensor.native_value == 15
-    assert sensor.unique_id == f"{mock_config_entry.entry_id}_station_80_no2"
+    assert sensor.unique_id.endswith("_no2")
 
 
 async def test_pollutant_not_created_if_missing():

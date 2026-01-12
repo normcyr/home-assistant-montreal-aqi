@@ -1,9 +1,12 @@
-from unittest.mock import AsyncMock, patch
+import sys
+from unittest.mock import AsyncMock, MagicMock, patch
 
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import HomeAssistant
 
 from custom_components.montreal_aqi.const import DOMAIN
+
+sys.modules["montreal_aqi_api"] = MagicMock()
 
 
 async def test_async_setup_entry(
@@ -38,7 +41,7 @@ async def test_async_setup_entry(
     refresh.assert_called_once()
     forward.assert_called_once_with(
         mock_config_entry,
-        ["air_quality", "sensor"],
+        ["sensor"],
     )
 
 
@@ -52,7 +55,7 @@ async def test_async_unload_entry(
 
     with (
         patch(
-            "custom_components.montreal_aqi.MontrealAQICoordinator.async_config_entry_first_refresh"
+            "custom_components.montreal_aqi.coordinator.MontrealAQICoordinator.async_config_entry_first_refresh"
         ),
         patch(
             "homeassistant.config_entries.ConfigEntries.async_forward_entry_setups",
@@ -88,7 +91,7 @@ async def test_reload_entry(
 
     with (
         patch(
-            "custom_components.montreal_aqi.MontrealAQICoordinator.async_config_entry_first_refresh"
+            "custom_components.montreal_aqi.coordinator.MontrealAQICoordinator.async_config_entry_first_refresh"
         ),
         patch(
             "homeassistant.config_entries.ConfigEntries.async_forward_entry_setups",
@@ -124,7 +127,7 @@ async def test_setup_entry_failure(
     mock_config_entry.add_to_hass(hass)
 
     with patch(
-        "custom_components.montreal_aqi.MontrealAQICoordinator.async_config_entry_first_refresh",
+        "custom_components.montreal_aqi.coordinator.MontrealAQICoordinator.async_config_entry_first_refresh",
         side_effect=Exception("API error"),
     ):
         result = await hass.config_entries.async_setup(mock_config_entry.entry_id)

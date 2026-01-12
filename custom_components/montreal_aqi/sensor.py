@@ -9,7 +9,6 @@ from homeassistant.components.sensor import (
     SensorEntityDescription,
     SensorStateClass,
 )
-from homeassistant.const import EntityCategory
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.util import dt as dt_util
@@ -31,8 +30,12 @@ if TYPE_CHECKING:
 
     from .coordinator import MontrealAQICoordinator
 
-
 _LOGGER = logging.getLogger(__name__)
+
+
+# -------------------------------------------------------------------
+# Setup
+# -------------------------------------------------------------------
 
 
 async def async_setup_entry(
@@ -40,147 +43,183 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up Montreal AQI sensors from a config entry."""
+    """Set up Montreal AQI sensors."""
     coordinator: MontrealAQICoordinator = hass.data[DOMAIN][entry.entry_id]
+    station_id: str = entry.data[CONF_STATION_ID]
+
+    # Device info shared by all sensors of this station
+    device_info = DeviceInfo(
+        identifiers={(DOMAIN, station_id)},
+        name=f"Montreal AQI Station {station_id}",
+        manufacturer="Ville de Montréal",
+        model="Air Quality Monitoring Station",
+    )
 
     sensors: list[SensorEntity] = [
-        MontrealAQISensor(coordinator, entry, AQI_DESCRIPTION),
-        MontrealAQISensor(coordinator, entry, AQI_LEVEL_DESCRIPTION),
-        MontrealAQITimestampSensor(coordinator, entry),
+        MontrealAQIIndexSensor(coordinator, device_info, entry.entry_id, station_id),
+        MontrealAQILevelSensor(coordinator, device_info, entry.entry_id, station_id),
+        MontrealAQITimestampSensor(
+            coordinator, device_info, entry.entry_id, station_id
+        ),
     ]
 
-    pollutants = coordinator.data.get("pollutants", {})
-
+    pollutants: dict[str, Any] = coordinator.data.get("pollutants", {})
     for code, meta in DEVICE_CLASS_MAP.items():
         if code not in pollutants:
             continue
-
         sensors.append(
             MontrealAQIPollutantSensor(
-                coordinator,
-                entry,
-                code,
-                meta,
+                coordinator=coordinator,
+                device_info=device_info,
+                entry_id=entry.entry_id,
+                station_id=station_id,
+                code=code,
+                meta=meta,
             )
         )
 
     async_add_entities(sensors, update_before_add=True)
 
 
-class MontrealAQIBaseEntity(CoordinatorEntity, SensorEntity):
-    """Base entity for all Montreal AQI sensors."""
+# -------------------------------------------------------------------
+# Base entity
+# -------------------------------------------------------------------
+
+
+class MontrealAQIBaseSensor(CoordinatorEntity, SensorEntity):
+    """Base class for Montreal AQI sensors."""
 
     _attr_should_poll = False
 
     def __init__(
         self,
         coordinator: MontrealAQICoordinator,
-        entry: ConfigEntry,
+        device_info: DeviceInfo,
+        entry_id: str,
+        station_id: str,
     ) -> None:
         super().__init__(coordinator)
-        self.entry = entry
-        self.station_id = entry.data[CONF_STATION_ID]
+        self._attr_device_info = device_info
+        self._entry_id = entry_id
+        self._station_id = station_id
 
     @property
     def available(self) -> bool:
         return self.coordinator.last_update_success
 
-    @property
-    def device_info(self) -> DeviceInfo:
-        return DeviceInfo(
-            identifiers={(DOMAIN, self.station_id)},
-            name=f"Montreal AQI Station {self.station_id}",
-            manufacturer="Ville de Montréal",
-            model="Air Quality Monitoring Station",
-        )
+
+# -------------------------------------------------------------------
+# AQI index sensor
+# -------------------------------------------------------------------
 
 
-class MontrealAQISensor(MontrealAQIBaseEntity):
-    """AQI and AQI level sensors."""
+class MontrealAQIIndexSensor(MontrealAQIBaseSensor, SensorEntity):
+    """AQI numeric value sensor."""
+
+    entity_description = AQI_DESCRIPTION
+    _attr_device_class = SensorDeviceClass.AQI
+    _attr_state_class = SensorStateClass.MEASUREMENT
 
     def __init__(
         self,
         coordinator: MontrealAQICoordinator,
-        entry: ConfigEntry,
-        description: SensorEntityDescription,
+        device_info: DeviceInfo,
+        entry_id: str,
+        station_id: str,
     ) -> None:
-        super().__init__(coordinator, entry)
-        self.entity_description = description
+        super().__init__(coordinator, device_info, entry_id, station_id)
+        self._attr_unique_id = f"{DOMAIN}_{entry_id}_{station_id}_aqi"
 
-        station = entry.data[CONF_STATION_ID]
-        self._attr_unique_id = f"{entry.entry_id}_station_{station}_{description.key}"
-        self._attr_name = f"Station {station} {description.name}"
+    @property
+    def native_value(self) -> int | None:
+        value = self.coordinator.data.get("aqi")
+        return int(value) if value is not None else None
 
-        if description is AQI_LEVEL_DESCRIPTION:
-            self._attr_entity_registry_visible_default = False
+
+# -------------------------------------------------------------------
+# AQI level sensor (textual)
+# -------------------------------------------------------------------
+
+
+class MontrealAQILevelSensor(MontrealAQIBaseSensor, SensorEntity):
+    """AQI qualitative level sensor."""
+
+    entity_description = AQI_LEVEL_DESCRIPTION
+    _attr_entity_registry_visible_default = False
+    _attr_icon = "mdi:signal"
+
+    def __init__(
+        self,
+        coordinator: MontrealAQICoordinator,
+        device_info: DeviceInfo,
+        entry_id: str,
+        station_id: str,
+    ) -> None:
+        super().__init__(coordinator, device_info, entry_id, station_id)
+        self._attr_unique_id = f"{DOMAIN}_{entry_id}_{station_id}_aqi_level"
 
     @property
     def native_value(self) -> str | None:
-        data = self.coordinator.data
-
-        if self.entity_description.key == "aqi":
-            return data.get("aqi")
-
-        if self.entity_description is AQI_LEVEL_DESCRIPTION:
-            aqi = data.get("aqi")
-            if aqi is None:
-                return None
-            if aqi <= 25:
-                return "Good"
-            if aqi <= 50:
-                return "Acceptable"
-            return "Bad"
-
-        return None
+        aqi = self.coordinator.data.get("aqi")
+        if aqi is None:
+            return None
+        if aqi <= 25:
+            return "Good"
+        if aqi <= 50:
+            return "Acceptable"
+        return "Bad"
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
-        if self.entity_description is AQI_LEVEL_DESCRIPTION:
-            return {
-                "dominant_pollutant": self.coordinator.data.get("dominant_pollutant")
-            }
-        return {}
+        return {"dominant_pollutant": self.coordinator.data.get("dominant_pollutant")}
 
 
-class MontrealAQIPollutantSensor(MontrealAQIBaseEntity):
-    """Individual pollutant concentration sensor."""
+# -------------------------------------------------------------------
+# Pollutant sensors
+# -------------------------------------------------------------------
+
+
+class MontrealAQIPollutantSensor(MontrealAQIBaseSensor, SensorEntity):
+    """Sensor for an individual pollutant concentration."""
 
     _attr_state_class = SensorStateClass.MEASUREMENT
-    _attr_entity_category = EntityCategory.DIAGNOSTIC
     _attr_suggested_display_precision = 1
 
     def __init__(
         self,
         coordinator: MontrealAQICoordinator,
-        entry: ConfigEntry,
+        device_info: DeviceInfo,
+        entry_id: str,
+        station_id: str,
         code: str,
         meta: dict[str, Any],
     ) -> None:
-        super().__init__(coordinator, entry)
-        self.code = code
-
+        super().__init__(coordinator, device_info, entry_id, station_id)
+        self._code = code
         self.entity_description = SensorEntityDescription(
-            key=meta["key"],
-            name=meta["name"],
+            key=f"{station_id}_{meta['key']}",
+            name=f"Station {station_id} {meta['name']}",
             native_unit_of_measurement=meta["unit"],
             icon=meta["icon"],
+            device_class=meta.get("device_class"),
         )
-
-        station = entry.data[CONF_STATION_ID]
-        self._attr_unique_id = f"{entry.entry_id}_station_{station}_{meta['key']}"
-        self._attr_name = f"Station {station} {meta['name']}"
+        self._attr_unique_id = f"{DOMAIN}_{station_id}_{meta['key']}"
 
     @property
     def native_value(self) -> float | None:
-        pollutant = self.coordinator.data.get("pollutants", {}).get(self.code)
-        if not pollutant:
+        pollutant = self.coordinator.data.get("pollutants", {}).get(self._code)
+        if pollutant is None:
             return None
-
         value = pollutant.get("concentration")
         return float(value) if value is not None else None
 
 
-class MontrealAQITimestampSensor(MontrealAQIBaseEntity):
+# -------------------------------------------------------------------
+# Timestamp sensor
+# -------------------------------------------------------------------
+
+
+class MontrealAQITimestampSensor(MontrealAQIBaseSensor, SensorEntity):
     """Timestamp of the last AQI measurement."""
 
     _attr_device_class = SensorDeviceClass.TIMESTAMP
@@ -188,13 +227,13 @@ class MontrealAQITimestampSensor(MontrealAQIBaseEntity):
     def __init__(
         self,
         coordinator: MontrealAQICoordinator,
-        entry: ConfigEntry,
+        device_info: DeviceInfo,
+        entry_id: str,
+        station_id: str,
     ) -> None:
-        super().__init__(coordinator, entry)
-
-        station = entry.data[CONF_STATION_ID]
-        self._attr_unique_id = f"{entry.entry_id}_station_{station}_timestamp"
-        self._attr_name = f"Station {station} Measurement Time"
+        super().__init__(coordinator, device_info, entry_id, station_id)
+        self._attr_unique_id = f"{entry_id}_{station_id}_timestamp"
+        self._attr_name = f"Station {station_id} Measurement Time"
 
     @property
     def native_value(self) -> datetime | None:

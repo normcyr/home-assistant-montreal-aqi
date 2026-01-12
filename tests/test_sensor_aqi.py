@@ -1,46 +1,50 @@
 from unittest.mock import AsyncMock
 
-from custom_components.montreal_aqi.const import AQI_LEVEL_DESCRIPTION
-from custom_components.montreal_aqi.sensor import MontrealAQISensor
+from custom_components.montreal_aqi.sensor import MontrealAQILevelSensor
 
 
-async def test_aqi_enum_good(hass, mock_config_entry):
+def _make_coordinator(aqi):
     coordinator = AsyncMock()
     coordinator.last_update_success = True
-    coordinator.data = {"aqi": 20}
+    coordinator.data = {"aqi": aqi}
+    return coordinator
 
-    sensor = MontrealAQISensor(
-        coordinator=coordinator,
-        entry=mock_config_entry,
-        description=AQI_LEVEL_DESCRIPTION,
+
+def test_aqi_level_good(device_info):
+    sensor = MontrealAQILevelSensor(
+        coordinator=_make_coordinator(20),
+        station_id="80",
+        device_info=device_info("80"),
+        entry_id="",
     )
-
     assert sensor.native_value == "Good"
 
 
-async def test_aqi_enum_acceptable(hass, mock_config_entry):
-    coordinator = AsyncMock()
-    coordinator.last_update_success = True
-    coordinator.data = {"aqi": 40}
-
-    sensor = MontrealAQISensor(
-        coordinator=coordinator,
-        entry=mock_config_entry,
-        description=AQI_LEVEL_DESCRIPTION,
+def test_aqi_level_acceptable(device_info):
+    sensor = MontrealAQILevelSensor(
+        coordinator=_make_coordinator(40),
+        station_id="80",
+        device_info=device_info("80"),
+        entry_id="",
     )
-
     assert sensor.native_value == "Acceptable"
 
 
-async def test_aqi_enum_bad(hass, mock_config_entry):
-    coordinator = AsyncMock()
-    coordinator.last_update_success = True
-    coordinator.data = {"aqi": 80}
-
-    sensor = MontrealAQISensor(
-        coordinator=coordinator,
-        entry=mock_config_entry,
-        description=AQI_LEVEL_DESCRIPTION,
+def test_aqi_level_bad(device_info):
+    sensor = MontrealAQILevelSensor(
+        coordinator=_make_coordinator(80),
+        station_id="80",
+        device_info=device_info("80"),
+        entry_id="",
     )
-
     assert sensor.native_value == "Bad"
+
+
+def test_aqi_level_none(device_info):
+    sensor = MontrealAQILevelSensor(
+        coordinator=_make_coordinator(None),
+        station_id="80",
+        device_info=device_info("80"),
+        entry_id="",
+    )
+    assert sensor.native_value is None

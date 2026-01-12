@@ -48,9 +48,10 @@ class MontrealAQICoordinator(DataUpdateCoordinator[dict[str, Any]]):
             data = await self.api.async_get_station(str(self.station_id))
 
         except Exception as err:
-            _LOGGER.exception(
-                "Error fetching Montreal AQI data for station %s",
+            _LOGGER.error(
+                "Error fetching Montreal AQI data for station %s: %s",
                 self.station_id,
+                err,
             )
             raise UpdateFailed(err) from err
 

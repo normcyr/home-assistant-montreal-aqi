@@ -1,2 +1,1 @@
 requests
-montreal-aqi-api==0.4.2
