@@ -18,4 +18,4 @@ async def test_coordinator_update(hass, mock_station_data):
     assert data["aqi"] == 42
     assert data["dominant_pollutant"] == "PM2.5"
     assert "NO2" in data["pollutants"]
-    assert data["pollutants"]["PM2.5"]["concentration"] == 12.3
+    assert data["pollutants"]["PM2.5"]["concentration"] == 12

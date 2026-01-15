@@ -170,6 +170,13 @@ class MontrealAQIIndexSensor(MontrealAQIBaseSensor):
             )
             return None
 
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return extra state attributes including measurement timestamp."""
+        return {
+            "measurement_timestamp": self.coordinator.data.get("timestamp"),
+        }
+
 
 # -------------------------------------------------------------------
 # AQI level sensor (textual)
@@ -220,8 +227,11 @@ class MontrealAQILevelSensor(MontrealAQIBaseSensor):
 
     @property
     def extra_state_attributes(self) -> dict[str, str | None]:
-        """Return dominant pollutant as attribute."""
-        return {"dominant_pollutant": self.coordinator.data.get("dominant_pollutant")}
+        """Return dominant pollutant and measurement timestamp as attributes."""
+        return {
+            "dominant_pollutant": self.coordinator.data.get("dominant_pollutant"),
+            "measurement_timestamp": self.coordinator.data.get("timestamp"),
+        }
 
 
 # -------------------------------------------------------------------
@@ -233,7 +243,7 @@ class MontrealAQIPollutantSensor(MontrealAQIBaseSensor):
     """Sensor for an individual pollutant concentration."""
 
     _attr_state_class = SensorStateClass.MEASUREMENT
-    _attr_suggested_display_precision = 2
+    _attr_suggested_display_precision = 0
 
     def __init__(
         self,
@@ -293,6 +303,13 @@ class MontrealAQIPollutantSensor(MontrealAQIBaseSensor):
                 value,
             )
             return None
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return measurement timestamp as attribute."""
+        return {
+            "measurement_timestamp": self.coordinator.data.get("timestamp"),
+        }
 
 
 # -------------------------------------------------------------------

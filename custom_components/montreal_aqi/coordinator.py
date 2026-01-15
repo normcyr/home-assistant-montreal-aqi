@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from datetime import timedelta
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
@@ -85,8 +86,11 @@ class MontrealAQICoordinator(DataUpdateCoordinator[dict[str, Any]]):
         timestamp = None
         if timestamp_str:
             try:
-                timestamp = dt_util.parse_datetime(timestamp_str)
-                if timestamp is None:
+                parsed = dt_util.parse_datetime(timestamp_str)
+                if parsed is not None:
+                    # Add 50 minutes as per Montreal data documentation
+                    timestamp = parsed + timedelta(minutes=50)
+                else:
                     _LOGGER.warning(
                         "Coordinator: failed to parse timestamp '%s' for station %s",
                         timestamp_str,
@@ -138,9 +142,11 @@ class MontrealAQICoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 continue
 
             if pollutant_name in PPB_TO_UGM3:
-                converted_value = round(float_value * PPB_TO_UGM3[pollutant_name], 2)
+                converted_value: float | int = round(
+                    float_value * PPB_TO_UGM3[pollutant_name]
+                )
             else:
-                converted_value = float_value
+                converted_value = int(float_value)
 
             converted[pollutant_name] = {"concentration": converted_value}
 
