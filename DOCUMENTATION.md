@@ -172,3 +172,26 @@ logger:
 ## 📜 License
 
 This project is licensed under the MIT Licence. See the [LICENSE](LICENSE) file for details.
+
+---
+
+## Known Limitations
+
+### Stations Without Current Data
+
+Some monitoring stations listed by the Montreal API may not have current air quality measurements available. This can happen for several reasons:
+
+- **Station offline**: The station may be temporarily offline for maintenance
+- **Data not yet available**: The station may not have published data for the current measurement period
+- **Archived station**: Some stations in the list may be historical and no longer active
+
+**Behavior:**
+- When adding a station without current data, Home Assistant will display a `ConfigEntryNotReady` error
+- The integration will automatically retry fetching data every 30 seconds (HA default retry interval)
+- Once the station has data available, the integration will successfully load and display measurements
+
+**Workaround:**
+- Try selecting a different station that has active measurements
+- Wait a few minutes and retry (data may be available in the next measurement cycle)
+- Check the [Montreal open data portal](https://data.montreal.ca) to verify station status
+

@@ -68,10 +68,13 @@ class MontrealAQICoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
         if not data:
             _LOGGER.warning(
-                "Coordinator: empty response from API for station %s",
+                "Coordinator: no data available for station %s (station may not have current measurements)",
                 self.station_id,
             )
-            raise UpdateFailed("Empty response from Montreal AQI API")
+            raise UpdateFailed(
+                f"No data available for station {self.station_id}. "
+                "Station may not have current measurements or may be offline."
+            )
 
         # Validate required fields
         if "aqi" not in data:
