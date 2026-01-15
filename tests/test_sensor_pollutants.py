@@ -23,7 +23,7 @@ async def test_pollutant_sensor_unique_id(device_info, mock_config_entry):
         meta=meta,
         device_info=device_info("80"),
         entry_id="",
-        )
+    )
 
     assert sensor.native_value == 15
     assert sensor.unique_id.endswith("_no2")
