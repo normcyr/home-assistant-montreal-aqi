@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any
 from datetime import datetime
+from typing import TYPE_CHECKING, Any
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
@@ -279,6 +279,9 @@ class MontrealAQIPollutantSensor(MontrealAQIBaseSensor):
             if isinstance(value, dict) and "concentration" in value
             else value
         )
+
+        if raw_value is None:
+            return None
 
         try:
             return float(raw_value)
