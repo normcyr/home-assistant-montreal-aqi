@@ -15,8 +15,6 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.util import dt as dt_util
 
 from .const import (
-    AQI_DESCRIPTION,
-    AQI_LEVEL_DESCRIPTION,
     CONF_STATION_ID,
     DEVICE_CLASS_MAP,
     DOMAIN,
@@ -141,7 +139,6 @@ class MontrealAQIBaseSensor(CoordinatorEntity, SensorEntity):
 class MontrealAQIIndexSensor(MontrealAQIBaseSensor):
     """AQI numeric value sensor (0-500+)."""
 
-    entity_description = AQI_DESCRIPTION
     _attr_device_class = SensorDeviceClass.AQI
     _attr_state_class = SensorStateClass.MEASUREMENT
 
@@ -155,6 +152,14 @@ class MontrealAQIIndexSensor(MontrealAQIBaseSensor):
         """Initialize AQI index sensor."""
         super().__init__(coordinator, device_info, entry_id, station_id)
         self._attr_unique_id = f"{DOMAIN}_{station_id}_aqi"
+        self._attr_name = f"Station {station_id} Air Quality Index"
+        self.entity_description = SensorEntityDescription(
+            key=f"{station_id}_aqi",
+            name=f"Station {station_id} Air Quality Index",
+            device_class=SensorDeviceClass.AQI,
+            state_class=SensorStateClass.MEASUREMENT,
+            icon="mdi:weather-hazy",
+        )
 
     @property
     def native_value(self) -> int | None:
@@ -186,7 +191,6 @@ class MontrealAQIIndexSensor(MontrealAQIBaseSensor):
 class MontrealAQILevelSensor(MontrealAQIBaseSensor):
     """AQI qualitative level sensor (Good/Acceptable/Bad)."""
 
-    entity_description = AQI_LEVEL_DESCRIPTION
     _attr_entity_registry_visible_default = False
     _attr_device_class = SensorDeviceClass.ENUM
     _attr_options = ["Good", "Acceptable", "Bad"]
@@ -201,6 +205,13 @@ class MontrealAQILevelSensor(MontrealAQIBaseSensor):
         """Initialize AQI level sensor."""
         super().__init__(coordinator, device_info, entry_id, station_id)
         self._attr_unique_id = f"{DOMAIN}_{station_id}_aqi_level"
+        self._attr_name = f"Station {station_id} Air Quality Level"
+        self.entity_description = SensorEntityDescription(
+            key=f"{station_id}_aqi_level",
+            name=f"Station {station_id} Air Quality Level",
+            device_class=SensorDeviceClass.ENUM,
+            icon="mdi:checkbox-marked-circle-outline",
+        )
 
     @property
     def native_value(self) -> str | None:
