@@ -1,15 +1,83 @@
 [project]
 name = "home-assistant-montreal-aqi"
 version = "0.6.0"
+description = "Home Assistant custom component for Montreal Air Quality Index"
+readme = "README.md"
 requires-python = ">=3.12"
+license = {text = "Apache-2.0"}
+authors = [
+	{name = "normcyr", email = "normcyr@users.noreply.github.com"}
+]
+classifiers = [
+	"Development Status :: 4 - Beta",
+	"Intended Audience :: Developers",
+	"License :: OSI Approved :: Apache Software License",
+	"Programming Language :: Python :: 3",
+	"Programming Language :: Python :: 3.12",
+	"Topic :: Home Automation",
+]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
 testpaths = ["tests"]
+addopts = "--cov=custom_components.montreal_aqi --cov-report=term-missing --strict-markers"
+markers = [
+	"asyncio: marks tests as async",
+]
 
 [tool.ruff]
 line-length = 88
+target-version = "py312"
+
+[tool.ruff.lint]
+select = [
+	"E",    # pycodestyle errors
+	"W",    # pycodestyle warnings
+	"F",    # Pyflakes
+	"I",    # isort
+	"B",    # flake8-bugbear
+	"RUF",  # Ruff-specific rules
+	"UP",   # pyupgrade
+	"A",    # flake8-builtins
+	"C4",   # flake8-comprehensions
+]
+ignore = [
+	"B905",  # `zip()` without an explicit `strict=` parameter
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["custom_components"]
+force-single-line = true
 
 [tool.mypy]
 python_version = "3.12"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+warn_unused_ignores = true
 ignore_missing_imports = true
+no_implicit_optional = true
+check_untyped_defs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+disallow_untyped_decorators = true
+
+[[tool.mypy.overrides]]
+module = "montreal_aqi_api.*"
+ignore_missing_imports = true
+
+[tool.coverage.run]
+branch = true
+source = ["custom_components.montreal_aqi"]
+
+[tool.coverage.report]
+exclude_lines = [
+	"pragma: no cover",
+	"def __repr__",
+	"raise AssertionError",
+	"raise NotImplementedError",
+	"if __name__ == .__main__.:",
+	"if TYPE_CHECKING:",
+]
+precision = 2

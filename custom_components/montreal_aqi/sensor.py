@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 from typing import TYPE_CHECKING, Any
+from datetime import datetime
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
@@ -22,8 +23,6 @@ from .const import (
 )
 
 if TYPE_CHECKING:
-    from datetime import datetime
-
     from homeassistant.config_entries import ConfigEntry
     from homeassistant.core import HomeAssistant
     from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -43,7 +42,13 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up Montreal AQI sensors."""
+    """Set up Montreal AQI sensors from config entry.
+
+    Args:
+        hass: Home Assistant instance
+        entry: Config entry
+        async_add_entities: Callback to add entities
+    """
     coordinator: MontrealAQICoordinator = hass.data[DOMAIN][entry.entry_id]
     station_id: str = entry.data[CONF_STATION_ID]
 
@@ -63,10 +68,20 @@ async def async_setup_entry(
         ),
     ]
 
+    # Add pollutant sensors for available pollutants
     pollutants: dict[str, Any] = coordinator.data.get("pollutants", {})
+    _LOGGER.debug(
+        "Setting up sensors for station %s with pollutants: %s",
+        station_id,
+        list(pollutants.keys()),
+    )
+
     for code, meta in DEVICE_CLASS_MAP.items():
         if code not in pollutants:
+            _LOGGER.debug("Pollutant %s not available for station %s", code, station_id)
             continue
+
+        _LOGGER.debug("Adding pollutant sensor for %s (station %s)", code, station_id)
         sensors.append(
             MontrealAQIPollutantSensor(
                 coordinator=coordinator,
@@ -78,6 +93,7 @@ async def async_setup_entry(
             )
         )
 
+    _LOGGER.debug("Setting up %d sensors for station %s", len(sensors), station_id)
     async_add_entities(sensors, update_before_add=True)
 
 
@@ -98,6 +114,14 @@ class MontrealAQIBaseSensor(CoordinatorEntity, SensorEntity):
         entry_id: str,
         station_id: str,
     ) -> None:
+        """Initialize base sensor.
+
+        Args:
+            coordinator: Data coordinator
+            device_info: Device information
+            entry_id: Config entry ID
+            station_id: Station ID
+        """
         super().__init__(coordinator)
         self._attr_device_info = device_info
         self._entry_id = entry_id
@@ -105,6 +129,7 @@ class MontrealAQIBaseSensor(CoordinatorEntity, SensorEntity):
 
     @property
     def available(self) -> bool:
+        """Return if entity is available."""
         return self.coordinator.last_update_success
 
 
@@ -113,8 +138,8 @@ class MontrealAQIBaseSensor(CoordinatorEntity, SensorEntity):
 # -------------------------------------------------------------------
 
 
-class MontrealAQIIndexSensor(MontrealAQIBaseSensor, SensorEntity):
-    """AQI numeric value sensor."""
+class MontrealAQIIndexSensor(MontrealAQIBaseSensor):
+    """AQI numeric value sensor (0-500+)."""
 
     entity_description = AQI_DESCRIPTION
     _attr_device_class = SensorDeviceClass.AQI
@@ -127,13 +152,23 @@ class MontrealAQIIndexSensor(MontrealAQIBaseSensor, SensorEntity):
         entry_id: str,
         station_id: str,
     ) -> None:
+        """Initialize AQI index sensor."""
         super().__init__(coordinator, device_info, entry_id, station_id)
-        self._attr_unique_id = f"{DOMAIN}_{entry_id}_{station_id}_aqi"
+        self._attr_unique_id = f"{DOMAIN}_{station_id}_aqi"
 
     @property
     def native_value(self) -> int | None:
+        """Return AQI value."""
         value = self.coordinator.data.get("aqi")
-        return int(value) if value is not None else None
+        if value is None:
+            return None
+        try:
+            return int(value)
+        except (ValueError, TypeError):
+            _LOGGER.warning(
+                "Invalid AQI value for station %s: %s", self._station_id, value
+            )
+            return None
 
 
 # -------------------------------------------------------------------
@@ -141,12 +176,13 @@ class MontrealAQIIndexSensor(MontrealAQIBaseSensor, SensorEntity):
 # -------------------------------------------------------------------
 
 
-class MontrealAQILevelSensor(MontrealAQIBaseSensor, SensorEntity):
-    """AQI qualitative level sensor."""
+class MontrealAQILevelSensor(MontrealAQIBaseSensor):
+    """AQI qualitative level sensor (Good/Acceptable/Bad)."""
 
     entity_description = AQI_LEVEL_DESCRIPTION
     _attr_entity_registry_visible_default = False
-    _attr_icon = "mdi:signal"
+    _attr_device_class = SensorDeviceClass.ENUM
+    _attr_options = ["Good", "Acceptable", "Bad"]
 
     def __init__(
         self,
@@ -155,22 +191,36 @@ class MontrealAQILevelSensor(MontrealAQIBaseSensor, SensorEntity):
         entry_id: str,
         station_id: str,
     ) -> None:
+        """Initialize AQI level sensor."""
         super().__init__(coordinator, device_info, entry_id, station_id)
-        self._attr_unique_id = f"{DOMAIN}_{entry_id}_{station_id}_aqi_level"
+        self._attr_unique_id = f"{DOMAIN}_{station_id}_aqi_level"
 
     @property
     def native_value(self) -> str | None:
+        """Return AQI level based on AQI value."""
         aqi = self.coordinator.data.get("aqi")
         if aqi is None:
             return None
-        if aqi <= 25:
+
+        try:
+            aqi_value = float(aqi)
+        except (ValueError, TypeError):
+            _LOGGER.warning(
+                "Invalid AQI value for level calculation (station %s): %s",
+                self._station_id,
+                aqi,
+            )
+            return None
+
+        if aqi_value <= 25:
             return "Good"
-        if aqi <= 50:
+        if aqi_value <= 50:
             return "Acceptable"
         return "Bad"
 
     @property
-    def extra_state_attributes(self) -> dict[str, Any]:
+    def extra_state_attributes(self) -> dict[str, str | None]:
+        """Return dominant pollutant as attribute."""
         return {"dominant_pollutant": self.coordinator.data.get("dominant_pollutant")}
 
 
@@ -179,11 +229,11 @@ class MontrealAQILevelSensor(MontrealAQIBaseSensor, SensorEntity):
 # -------------------------------------------------------------------
 
 
-class MontrealAQIPollutantSensor(MontrealAQIBaseSensor, SensorEntity):
+class MontrealAQIPollutantSensor(MontrealAQIBaseSensor):
     """Sensor for an individual pollutant concentration."""
 
     _attr_state_class = SensorStateClass.MEASUREMENT
-    _attr_suggested_display_precision = 1
+    _attr_suggested_display_precision = 2
 
     def __init__(
         self,
@@ -194,6 +244,16 @@ class MontrealAQIPollutantSensor(MontrealAQIBaseSensor, SensorEntity):
         code: str,
         meta: dict[str, Any],
     ) -> None:
+        """Initialize pollutant sensor.
+
+        Args:
+            coordinator: Data coordinator
+            device_info: Device information
+            entry_id: Config entry ID
+            station_id: Station ID
+            code: Pollutant code (e.g., 'PM2.5')
+            meta: Metadata for the pollutant from DEVICE_CLASS_MAP
+        """
         super().__init__(coordinator, device_info, entry_id, station_id)
         self._code = code
         self.entity_description = SensorEntityDescription(
@@ -207,11 +267,29 @@ class MontrealAQIPollutantSensor(MontrealAQIBaseSensor, SensorEntity):
 
     @property
     def native_value(self) -> float | None:
-        pollutant = self.coordinator.data.get("pollutants", {}).get(self._code)
-        if pollutant is None:
+        """Return pollutant concentration value."""
+        pollutants = self.coordinator.data.get("pollutants", {})
+        value = pollutants.get(self._code)
+
+        if value is None:
             return None
-        value = pollutant.get("concentration")
-        return float(value) if value is not None else None
+
+        raw_value = (
+            value.get("concentration")
+            if isinstance(value, dict) and "concentration" in value
+            else value
+        )
+
+        try:
+            return float(raw_value)
+        except (ValueError, TypeError):
+            _LOGGER.warning(
+                "Invalid pollutant value for %s (station %s): %s",
+                self._code,
+                self._station_id,
+                value,
+            )
+            return None
 
 
 # -------------------------------------------------------------------
@@ -219,7 +297,7 @@ class MontrealAQIPollutantSensor(MontrealAQIBaseSensor, SensorEntity):
 # -------------------------------------------------------------------
 
 
-class MontrealAQITimestampSensor(MontrealAQIBaseSensor, SensorEntity):
+class MontrealAQITimestampSensor(MontrealAQIBaseSensor):
     """Timestamp of the last AQI measurement."""
 
     _attr_device_class = SensorDeviceClass.TIMESTAMP
@@ -231,11 +309,42 @@ class MontrealAQITimestampSensor(MontrealAQIBaseSensor, SensorEntity):
         entry_id: str,
         station_id: str,
     ) -> None:
+        """Initialize timestamp sensor."""
         super().__init__(coordinator, device_info, entry_id, station_id)
-        self._attr_unique_id = f"{entry_id}_{station_id}_timestamp"
+        self._attr_unique_id = f"{DOMAIN}_{station_id}_timestamp"
         self._attr_name = f"Station {station_id} Measurement Time"
 
     @property
     def native_value(self) -> datetime | None:
+        """Return timestamp of last measurement."""
         ts = self.coordinator.data.get("timestamp")
-        return dt_util.parse_datetime(ts) if ts else None
+        if ts is None:
+            return None
+
+        if isinstance(ts, datetime):
+            return ts
+
+        if isinstance(ts, str):
+            try:
+                parsed = dt_util.parse_datetime(ts)
+                if parsed is None:
+                    _LOGGER.warning(
+                        "Failed to parse timestamp for station %s: %s",
+                        self._station_id,
+                        ts,
+                    )
+                return parsed
+            except Exception as err:
+                _LOGGER.warning(
+                    "Error parsing timestamp for station %s: %s",
+                    self._station_id,
+                    err,
+                )
+                return None
+
+        _LOGGER.warning(
+            "Unexpected timestamp type for station %s: %s",
+            self._station_id,
+            type(ts),
+        )
+        return None

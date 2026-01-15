@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Any
 
 import voluptuous as vol
 from homeassistant.config_entries import ConfigFlow
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import selector
 from homeassistant.helpers.selector import SelectOptionDict
 
@@ -17,30 +18,51 @@ if TYPE_CHECKING:
 _LOGGER = logging.getLogger(__name__)
 
 
+class CannotConnect(HomeAssistantError):
+    """Error to indicate we cannot connect."""
+
+
+class InvalidStation(HomeAssistantError):
+    """Error to indicate invalid station."""
+
+
 class MontrealAQIConfigFlow(ConfigFlow, domain=DOMAIN):
     """Config flow for Montreal AQI integration."""
 
     VERSION = 1
 
     def __init__(self) -> None:
+        """Initialize config flow."""
         self._stations: dict[str, dict[str, Any]] = {}
 
     async def async_step_user(
         self,
         user_input: dict[str, Any] | None = None,
     ) -> ConfigFlowResult:
+        """Handle a flow initiated by the user."""
         if user_input is not None:
             station_id = user_input[CONF_STATION_ID]
-            station = self._stations[station_id]
+            station = self._stations.get(station_id)
+
+            if not station:
+                _LOGGER.error(
+                    "Config flow: station %s not found in available stations",
+                    station_id,
+                )
+                return self.async_abort(reason="invalid_station")
+
+            # Check if already configured
+            await self.async_set_unique_id(station_id)
+            self._abort_if_unique_id_configured()
 
             _LOGGER.debug(
                 "Config flow: selected station %s (%s)",
                 station_id,
-                station["name"],
+                station.get("name", "Unknown"),
             )
 
             return self.async_create_entry(
-                title=station["name"],
+                title=station.get("name", station_id),
                 data={CONF_STATION_ID: station_id},
             )
 
@@ -49,20 +71,28 @@ class MontrealAQIConfigFlow(ConfigFlow, domain=DOMAIN):
         try:
             stations = await api.async_list_stations()
         except Exception as err:
-            _LOGGER.error("Config flow: cannot fetch stations: %s", err)
+            _LOGGER.error(
+                "Config flow: cannot fetch stations: %s",
+                err,
+                exc_info=True,
+            )
             return self.async_abort(reason="cannot_connect")
 
         if not stations:
+            _LOGGER.warning("Config flow: no stations available from API")
             return self.async_abort(reason="no_stations")
 
         self._stations = {s["station_id"]: s for s in stations}
 
+        # Sort stations by name for better UX
         options: list[SelectOptionDict] = [
             SelectOptionDict(
                 value=station_id,
-                label=f"{station_id} — {station['name']}",
+                label=f"{station_id} — {station.get('name', 'Unknown')}",
             )
-            for station_id, station in self._stations.items()
+            for station_id, station in sorted(
+                self._stations.items(), key=lambda x: x[1].get("name", x[0])
+            )
         ]
 
         _LOGGER.debug("Config flow: presenting %d stations", len(options))

@@ -12,21 +12,29 @@ from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
     UpdateFailed,
 )
+from homeassistant.util import dt as dt_util
 
-from .const import DOMAIN, UPDATE_INTERVAL
+from .const import DOMAIN, PPB_TO_UGM3, UPDATE_INTERVAL
 
 _LOGGER = logging.getLogger(__name__)
 
 
 class MontrealAQICoordinator(DataUpdateCoordinator[dict[str, Any]]):
-    """Coordinator for Montreal AQI."""
+    """Coordinator for Montreal AQI data fetching."""
 
     def __init__(
         self,
         hass: HomeAssistant,
         api: MontrealAQIApi,
-        station_id: int,
+        station_id: str,
     ) -> None:
+        """Initialize coordinator.
+
+        Args:
+            hass: Home Assistant instance
+            api: Montreal AQI API wrapper
+            station_id: Station ID as string
+        """
         self.api = api
         self.station_id = station_id
 
@@ -38,30 +46,102 @@ class MontrealAQICoordinator(DataUpdateCoordinator[dict[str, Any]]):
         )
 
     async def _async_update_data(self) -> dict[str, Any]:
-        """Fetch data from API."""
+        """Fetch and process data from API."""
         _LOGGER.debug(
             "Coordinator: updating data for station %s",
             self.station_id,
         )
 
         try:
-            data = await self.api.async_get_station(str(self.station_id))
-
+            data = await self.api.async_get_station(self.station_id)
         except Exception as err:
             _LOGGER.error(
                 "Error fetching Montreal AQI data for station %s: %s",
                 self.station_id,
                 err,
+                exc_info=True,
             )
-            raise UpdateFailed(err) from err
+            raise UpdateFailed(
+                f"Cannot fetch data for station {self.station_id}"
+            ) from err
 
         if not data:
+            _LOGGER.warning(
+                "Coordinator: empty response from API for station %s",
+                self.station_id,
+            )
             raise UpdateFailed("Empty response from Montreal AQI API")
 
-        # data
+        # Validate required fields
+        if "aqi" not in data:
+            _LOGGER.warning(
+                "Coordinator: missing 'aqi' field in response for station %s",
+                self.station_id,
+            )
+            raise UpdateFailed("Missing AQI value in API response")
+
+        # Process timestamp
+        timestamp_str = data.get("timestamp")
+        timestamp = None
+        if timestamp_str:
+            try:
+                timestamp = dt_util.parse_datetime(timestamp_str)
+                if timestamp is None:
+                    _LOGGER.warning(
+                        "Coordinator: failed to parse timestamp '%s' for station %s",
+                        timestamp_str,
+                        self.station_id,
+                    )
+            except Exception as err:
+                _LOGGER.warning(
+                    "Coordinator: error parsing timestamp for station %s: %s",
+                    self.station_id,
+                    err,
+                )
+
+        # Process pollutants with unit conversion
+        pollutants = data.get("pollutants", {})
+        processed_pollutants = self._convert_pollutants(pollutants)
+
         return {
             "aqi": data.get("aqi"),
             "dominant_pollutant": data.get("dominant_pollutant"),
-            "pollutants": data.get("pollutants", {}),
-            "timestamp": data.get("timestamp"),
+            "pollutants": processed_pollutants,
+            "timestamp": timestamp,
         }
+
+    def _convert_pollutants(
+        self, pollutants: dict[str, Any]
+    ) -> dict[str, dict[str, float | None]]:
+        """Convert pollutant units from PPB to µg/m³ if needed, keeping concentration key."""
+        converted: dict[str, dict[str, float | None]] = {}
+        for pollutant_name, value in pollutants.items():
+            raw_value = (
+                value.get("concentration")
+                if isinstance(value, dict) and "concentration" in value
+                else value
+            )
+
+            if raw_value is None:
+                converted[pollutant_name] = {"concentration": None}
+                continue
+
+            try:
+                float_value = float(raw_value)
+            except (ValueError, TypeError):
+                _LOGGER.warning(
+                    "Coordinator: invalid pollutant value for %s: %s",
+                    pollutant_name,
+                    value,
+                )
+                converted[pollutant_name] = {"concentration": None}
+                continue
+
+            if pollutant_name in PPB_TO_UGM3:
+                converted_value = round(float_value * PPB_TO_UGM3[pollutant_name], 2)
+            else:
+                converted_value = float_value
+
+            converted[pollutant_name] = {"concentration": converted_value}
+
+        return converted

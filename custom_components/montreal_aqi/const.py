@@ -1,3 +1,5 @@
+"""Constants for Montreal AQI integration."""
+
 from datetime import timedelta
 from typing import Any
 
@@ -8,14 +10,21 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.const import CONCENTRATION_MICROGRAMS_PER_CUBIC_METER
 
+# Integration identifiers
 DOMAIN = "montreal_aqi"
 PLATFORMS = ["sensor"]
 
+# Configuration keys
 CONF_STATION_ID = "station_id"
 CONF_STATION_NAME = "station_name"
 
-UPDATE_INTERVAL = timedelta(minutes=30)  # production
-# UPDATE_INTERVAL = timedelta(minutes=5)  # development/testing
+# Update interval: 30 minutes (official API update frequency)
+# For development/testing: timedelta(minutes=5)
+UPDATE_INTERVAL = timedelta(minutes=30)
+
+# -------------------------------------------------------------------
+# Sensor Descriptions
+# -------------------------------------------------------------------
 
 AQI_DESCRIPTION = SensorEntityDescription(
     key="aqi",
@@ -24,15 +33,26 @@ AQI_DESCRIPTION = SensorEntityDescription(
     state_class=SensorStateClass.MEASUREMENT,
     icon="mdi:weather-hazy",
 )
+"""Sensor description for AQI numeric value (0-500+)."""
+
 AQI_LEVEL_DESCRIPTION = SensorEntityDescription(
-    key="iqa_level",
-    name="Air Quality",
+    key="aqi_level",
+    name="Air Quality Level",
     device_class=SensorDeviceClass.ENUM,
-    options=["Good", "Acceptable", "Bad"],
     icon="mdi:checkbox-marked-circle-outline",
 )
+"""Sensor description for AQI qualitative level (Good/Acceptable/Bad).
+
+Note: Options are set via _attr_options in MontrealAQILevelSensor, not here.
+"""
+
+# -------------------------------------------------------------------
+# Pollutant Device Classes and Units
+# -------------------------------------------------------------------
 
 DEVICE_CLASS_MAP: dict[str, dict[str, Any]] = {
+    # Mapping of pollutant codes to sensor metadata.
+    # Each pollutant includes: key, name, device_class, unit, icon.
     "PM2.5": {
         "key": "pm25",
         "name": "PM2.5",
@@ -77,7 +97,12 @@ DEVICE_CLASS_MAP: dict[str, dict[str, Any]] = {
     },
 }
 
-PPB_TO_UGM3 = {
+# -------------------------------------------------------------------
+# Unit Conversions
+# -------------------------------------------------------------------
+
+PPB_TO_UGM3: dict[str, float] = {
+    # Convert PPB (Parts Per Billion) to µg/m³ using MW/24.45.
     "O3": 48.00 / 24.45,
     "NO2": 46.01 / 24.45,
     "SO2": 64.07 / 24.45,
