@@ -1,6 +1,6 @@
 [project]
 name = "home-assistant-montreal-aqi"
-version = "0.7.0-rc.1"
+version = "0.7.0-rc.2"
 description = "Home Assistant custom component for Montreal Air Quality Index"
 readme = "README.md"
 requires-python = ">=3.12"
