@@ -1,0 +1,53 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Seleccionar estación de monitoreo de calidad del aire",
+        "description": "Elige una estación de monitoreo de calidad del aire de Montreal para seguir",
+        "data": {
+          "station_id": "Estación"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "Esta estación ya está configurada.",
+      "cannot_connect": "No se pudo conectar a la API de Montreal AQI. Verifica tu conexión a Internet.",
+      "no_stations": "No hay estaciones de monitoreo disponibles. La API puede estar temporalmente indisponible.",
+      "invalid_station": "La estación seleccionada no está disponible."
+    },
+    "error": {
+      "cannot_connect": "No se puede conectar a la API"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "aqi": {
+        "name": "Índice de calidad del aire"
+      },
+      "aqi_level": {
+        "name": "Nivel de calidad del aire"
+      },
+      "pm25": {
+        "name": "PM2.5"
+      },
+      "pm10": {
+        "name": "PM10"
+      },
+      "no2": {
+        "name": "NO₂"
+      },
+      "o3": {
+        "name": "Ozono"
+      },
+      "so2": {
+        "name": "SO₂"
+      },
+      "co": {
+        "name": "CO"
+      },
+      "timestamp": {
+        "name": "Hora de medición"
+      }
+    }
+  }
+}

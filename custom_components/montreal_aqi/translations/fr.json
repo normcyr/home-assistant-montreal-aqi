@@ -2,20 +2,52 @@
   "config": {
     "step": {
       "user": {
-        "title": "Configurer Montreal AQI",
-        "description": "Entrez l'ID de la station pour surveiller la qualité de l'air.",
+        "title": "Sélectionner une station de surveillance de la qualité de l'air",
+        "description": "Choisissez une station de surveillance de la qualité de l'air de Montréal à suivre",
         "data": {
-          "station_id": "ID de la station"
+          "station_id": "Station"
         }
       }
     },
-    "error": {
-      "invalid_station": "ID de station invalide. Veuillez vérifier et réessayer.",
-      "connection_error": "Impossible de se connecter au service AQI. Vérifiez votre connexion Internet."
-    },
     "abort": {
-      "already_configured": "Cette station est déjà configurée."
+      "already_configured": "Cette station est déjà configurée.",
+      "cannot_connect": "Impossible de se connecter à l'API Montreal AQI. Vérifiez votre connexion Internet.",
+      "no_stations": "Aucune station de surveillance n'est disponible. L'API peut être temporairement indisponible.",
+      "invalid_station": "La station sélectionnée n'est pas disponible."
+    },
+    "error": {
+      "cannot_connect": "Impossible de se connecter à l'API"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "aqi": {
+        "name": "Indice de qualité de l'air"
+      },
+      "aqi_level": {
+        "name": "Niveau de qualité de l'air"
+      },
+      "pm25": {
+        "name": "PM2.5"
+      },
+      "pm10": {
+        "name": "PM10"
+      },
+      "no2": {
+        "name": "NO₂"
+      },
+      "o3": {
+        "name": "Ozone"
+      },
+      "so2": {
+        "name": "SO₂"
+      },
+      "co": {
+        "name": "CO"
+      },
+      "timestamp": {
+        "name": "Heure de mesure"
+      }
     }
   }
 }
-  
