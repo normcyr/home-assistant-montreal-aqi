@@ -84,14 +84,15 @@ class MontrealAQIConfigFlow(ConfigFlow, domain=DOMAIN):
 
         self._stations = {s["station_id"]: s for s in stations}
 
-        # Sort stations by name for better UX
+        # Sort stations by station_id (numeric) for consistent ordering
         options: list[SelectOptionDict] = [
             SelectOptionDict(
                 value=station_id,
                 label=f"{station_id} — {station.get('name', 'Unknown')}",
             )
             for station_id, station in sorted(
-                self._stations.items(), key=lambda x: x[1].get("name", x[0])
+                self._stations.items(),
+                key=lambda item: int(item[0]) if str(item[0]).isdigit() else item[0],
             )
         ]
 
