@@ -26,17 +26,17 @@ class InvalidStation(HomeAssistantError):
     """Error to indicate invalid station."""
 
 
-class MontrealAQIConfigFlow(ConfigFlow, domain=DOMAIN):
+class MontrealAQIConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg]
     """Config flow for Montreal AQI integration."""
 
     VERSION = 1
 
-    def __init__(self) -> None:
+    def __init__(self: MontrealAQIConfigFlow) -> None:
         """Initialize config flow."""
         self._stations: dict[str, dict[str, Any]] = {}
 
     async def async_step_user(
-        self,
+        self: MontrealAQIConfigFlow,
         user_input: dict[str, Any] | None = None,
     ) -> ConfigFlowResult:
         """Handle a flow initiated by the user."""
