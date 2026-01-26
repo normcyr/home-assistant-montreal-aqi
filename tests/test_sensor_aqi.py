@@ -17,7 +17,7 @@ def test_aqi_level_good(device_info):
         device_info=device_info("80"),
         entry_id="",
     )
-    assert sensor.native_value == "Good"
+    assert sensor.native_value == "good"
 
 
 def test_aqi_level_acceptable(device_info):
@@ -27,7 +27,7 @@ def test_aqi_level_acceptable(device_info):
         device_info=device_info("80"),
         entry_id="",
     )
-    assert sensor.native_value == "Acceptable"
+    assert sensor.native_value == "acceptable"
 
 
 def test_aqi_level_bad(device_info):
@@ -37,7 +37,7 @@ def test_aqi_level_bad(device_info):
         device_info=device_info("80"),
         entry_id="",
     )
-    assert sensor.native_value == "Bad"
+    assert sensor.native_value == "bad"
 
 
 def test_aqi_level_none(device_info):

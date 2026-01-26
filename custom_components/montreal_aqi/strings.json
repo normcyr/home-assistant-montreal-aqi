@@ -25,7 +25,12 @@
         "name": "Air Quality Index"
       },
       "aqi_level": {
-        "name": "Air Quality Level"
+        "name": "Air Quality Level",
+        "state": {
+          "good": "Good",
+          "acceptable": "Acceptable",
+          "bad": "Bad"
+        }
       },
       "pm25": {
         "name": "PM2.5"

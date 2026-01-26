@@ -99,7 +99,7 @@ pytest --cov=custom_components.montreal_aqi --cov-report=html
 
 ### Key Dependencies
 
-- `montreal-aqi-api==0.4.2` - Official Montreal AQI API wrapper (pinned in `manifest.json`)
+- `montreal-aqi-api==0.5.0` - Official Montreal AQI API wrapper (pinned in `manifest.json`)
 - `homeassistant>=2024.12.0` - For development and testing
 - `pytest-homeassistant-custom-component` - HA-specific testing utilities
 

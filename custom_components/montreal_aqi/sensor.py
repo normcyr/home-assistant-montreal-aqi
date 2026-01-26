@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING, Any
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntity,
-    SensorEntityDescription,
     SensorStateClass,
 )
 from homeassistant.helpers.device_registry import DeviceInfo
@@ -61,9 +60,7 @@ async def async_setup_entry(
     sensors: list[SensorEntity] = [
         MontrealAQIIndexSensor(coordinator, device_info, entry.entry_id, station_id),
         MontrealAQILevelSensor(coordinator, device_info, entry.entry_id, station_id),
-        MontrealAQITimestampSensor(
-            coordinator, device_info, entry.entry_id, station_id
-        ),
+        MontrealAQITimestampSensor(coordinator, device_info, entry.entry_id, station_id),
     ]
 
     # Add pollutant sensors for available pollutants
@@ -141,6 +138,9 @@ class MontrealAQIIndexSensor(MontrealAQIBaseSensor):
 
     _attr_device_class = SensorDeviceClass.AQI
     _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_has_entity_name = True
+    _attr_translation_key = "aqi"
+    _attr_icon = "mdi:weather-hazy"
 
     def __init__(
         self,
@@ -152,14 +152,6 @@ class MontrealAQIIndexSensor(MontrealAQIBaseSensor):
         """Initialize AQI index sensor."""
         super().__init__(coordinator, device_info, entry_id, station_id)
         self._attr_unique_id = f"{DOMAIN}_{station_id}_aqi"
-        self._attr_name = f"Station {station_id} Air Quality Index"
-        self.entity_description = SensorEntityDescription(
-            key=f"{station_id}_aqi",
-            name=f"Station {station_id} Air Quality Index",
-            device_class=SensorDeviceClass.AQI,
-            state_class=SensorStateClass.MEASUREMENT,
-            icon="mdi:weather-hazy",
-        )
 
     @property
     def native_value(self) -> int | None:
@@ -170,9 +162,7 @@ class MontrealAQIIndexSensor(MontrealAQIBaseSensor):
         try:
             return int(value)
         except (ValueError, TypeError):
-            _LOGGER.warning(
-                "Invalid AQI value for station %s: %s", self._station_id, value
-            )
+            _LOGGER.warning("Invalid AQI value for station %s: %s", self._station_id, value)
             return None
 
     @property
@@ -193,7 +183,10 @@ class MontrealAQILevelSensor(MontrealAQIBaseSensor):
 
     _attr_entity_registry_visible_default = False
     _attr_device_class = SensorDeviceClass.ENUM
-    _attr_options = ["Good", "Acceptable", "Bad"]
+    _attr_options = ["good", "acceptable", "bad"]
+    _attr_has_entity_name = True
+    _attr_translation_key = "aqi_level"
+    _attr_icon = "mdi:checkbox-marked-circle-outline"
 
     def __init__(
         self,
@@ -205,13 +198,6 @@ class MontrealAQILevelSensor(MontrealAQIBaseSensor):
         """Initialize AQI level sensor."""
         super().__init__(coordinator, device_info, entry_id, station_id)
         self._attr_unique_id = f"{DOMAIN}_{station_id}_aqi_level"
-        self._attr_name = f"Station {station_id} Air Quality Level"
-        self.entity_description = SensorEntityDescription(
-            key=f"{station_id}_aqi_level",
-            name=f"Station {station_id} Air Quality Level",
-            device_class=SensorDeviceClass.ENUM,
-            icon="mdi:checkbox-marked-circle-outline",
-        )
 
     @property
     def native_value(self) -> str | None:
@@ -231,10 +217,10 @@ class MontrealAQILevelSensor(MontrealAQIBaseSensor):
             return None
 
         if aqi_value <= 25:
-            return "Good"
+            return "good"
         if aqi_value <= 50:
-            return "Acceptable"
-        return "Bad"
+            return "acceptable"
+        return "bad"
 
     @property
     def extra_state_attributes(self) -> dict[str, str | None]:
@@ -255,6 +241,7 @@ class MontrealAQIPollutantSensor(MontrealAQIBaseSensor):
 
     _attr_state_class = SensorStateClass.MEASUREMENT
     _attr_suggested_display_precision = 0
+    _attr_has_entity_name = True
 
     def __init__(
         self,
@@ -277,13 +264,10 @@ class MontrealAQIPollutantSensor(MontrealAQIBaseSensor):
         """
         super().__init__(coordinator, device_info, entry_id, station_id)
         self._code = code
-        self.entity_description = SensorEntityDescription(
-            key=f"{station_id}_{meta['key']}",
-            name=f"Station {station_id} {meta['name']}",
-            native_unit_of_measurement=meta["unit"],
-            icon=meta["icon"],
-            device_class=meta.get("device_class"),
-        )
+        self._attr_translation_key = meta["key"]
+        self._attr_native_unit_of_measurement = meta["unit"]
+        self._attr_icon = meta["icon"]
+        self._attr_device_class = meta.get("device_class")
         self._attr_unique_id = f"{DOMAIN}_{station_id}_{meta['key']}"
 
     @property
@@ -295,11 +279,7 @@ class MontrealAQIPollutantSensor(MontrealAQIBaseSensor):
         if value is None:
             return None
 
-        raw_value = (
-            value.get("concentration")
-            if isinstance(value, dict) and "concentration" in value
-            else value
-        )
+        raw_value = value.get("concentration") if isinstance(value, dict) and "concentration" in value else value
 
         if raw_value is None:
             return None
@@ -332,6 +312,8 @@ class MontrealAQITimestampSensor(MontrealAQIBaseSensor):
     """Timestamp of the last AQI measurement."""
 
     _attr_device_class = SensorDeviceClass.TIMESTAMP
+    _attr_has_entity_name = True
+    _attr_translation_key = "timestamp"
 
     def __init__(
         self,
@@ -343,7 +325,6 @@ class MontrealAQITimestampSensor(MontrealAQIBaseSensor):
         """Initialize timestamp sensor."""
         super().__init__(coordinator, device_info, entry_id, station_id)
         self._attr_unique_id = f"{DOMAIN}_{station_id}_timestamp"
-        self._attr_name = f"Station {station_id} Measurement Time"
 
     @property
     def native_value(self) -> datetime | None:
