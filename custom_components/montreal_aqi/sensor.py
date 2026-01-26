@@ -60,7 +60,9 @@ async def async_setup_entry(
     sensors: list[SensorEntity] = [
         MontrealAQIIndexSensor(coordinator, device_info, entry.entry_id, station_id),
         MontrealAQILevelSensor(coordinator, device_info, entry.entry_id, station_id),
-        MontrealAQITimestampSensor(coordinator, device_info, entry.entry_id, station_id),
+        MontrealAQITimestampSensor(
+            coordinator, device_info, entry.entry_id, station_id
+        ),
     ]
 
     # Add pollutant sensors for available pollutants
@@ -162,7 +164,9 @@ class MontrealAQIIndexSensor(MontrealAQIBaseSensor):
         try:
             return int(value)
         except (ValueError, TypeError):
-            _LOGGER.warning("Invalid AQI value for station %s: %s", self._station_id, value)
+            _LOGGER.warning(
+                "Invalid AQI value for station %s: %s", self._station_id, value
+            )
             return None
 
     @property
@@ -279,7 +283,11 @@ class MontrealAQIPollutantSensor(MontrealAQIBaseSensor):
         if value is None:
             return None
 
-        raw_value = value.get("concentration") if isinstance(value, dict) and "concentration" in value else value
+        raw_value = (
+            value.get("concentration")
+            if isinstance(value, dict) and "concentration" in value
+            else value
+        )
 
         if raw_value is None:
             return None
