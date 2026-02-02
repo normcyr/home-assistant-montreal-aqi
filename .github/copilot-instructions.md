@@ -60,15 +60,15 @@ This is a **Home Assistant custom component** for monitoring air quality data fr
 
 ## Setup (use devcontainer for consistency)
 
-This project uses standard Python packaging with pip.
+This project uses standard Python packaging with pip and modern tools for performance.
 
 ```bash
-# Install dependencies
-pip install -r requirements.txt
-pip install -r requirements_dev.txt
+# Install dependencies with uv (faster than pip)
+uv pip install -r requirements.txt
+uv pip install -r requirements_dev.txt
 
 # For testing
-pip install -r requirements_test.txt
+uv pip install -r requirements_test.txt
 ```
 
 ```bash
@@ -84,6 +84,10 @@ pytest -v
 
 # Coverage
 pytest --cov=custom_components.montreal_aqi --cov-report=html
+
+# Pre-commit hooks with prek (faster than pre-commit)
+prek install
+prek run --all-files
 ```
 
 ### Key Files to Check First

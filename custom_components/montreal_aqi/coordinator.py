@@ -15,7 +15,7 @@ from homeassistant.helpers.update_coordinator import (
 )
 from homeassistant.util import dt as dt_util
 
-from .const import DOMAIN, PPB_TO_UGM3, UPDATE_INTERVAL
+from .const import DOMAIN, MIN_REQUIRED_POLLUTANTS, PPB_TO_UGM3, UPDATE_INTERVAL
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -83,6 +83,51 @@ class MontrealAQICoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 self.station_id,
             )
             raise UpdateFailed("Missing AQI value in API response")
+
+        # Validate that enough pollutants are available for a reliable AQI
+        # If too few pollutants are measured, the AQI may be inaccurate
+        # (e.g., due to sensor malfunction or maintenance)
+        pollutants = data.get("pollutants", {})
+        available_pollutants = {
+            code: value
+            for code, value in pollutants.items()
+            if value and value.get("concentration") is not None
+        }
+        num_available = len(available_pollutants)
+
+        if num_available < MIN_REQUIRED_POLLUTANTS:
+            _LOGGER.warning(
+                "Coordinator: insufficient pollutant data for station %s. "
+                "Only %d out of %d required pollutants are available. "
+                "Available: %s. Attempting to use fallback AQI source.",
+                self.station_id,
+                num_available,
+                MIN_REQUIRED_POLLUTANTS,
+                list(available_pollutants.keys()),
+            )
+
+            # Try fallback source (Ckan datastore)
+            fallback_data = await self.api.async_get_aqi_fallback(self.station_id)
+            if fallback_data:
+                _LOGGER.info(
+                    "Coordinator: using fallback AQI for station %s (AQI: %s)",
+                    self.station_id,
+                    fallback_data.get("aqi"),
+                )
+                # Use fallback AQI and pollutant, keep other data
+                data["aqi"] = fallback_data.get("aqi")
+                data["dominant_pollutant"] = fallback_data.get("dominant_pollutant")
+            else:
+                _LOGGER.error(
+                    "Coordinator: insufficient pollutant data and fallback unavailable for station %s. "
+                    "Rejecting update.",
+                    self.station_id,
+                )
+                raise UpdateFailed(
+                    f"Insufficient pollutant data for station {self.station_id} "
+                    f"({num_available} pollutants, minimum {MIN_REQUIRED_POLLUTANTS} required). "
+                    "Fallback AQI source also unavailable."
+                )
 
         # Process timestamp
         timestamp_str = data.get("timestamp")

@@ -22,6 +22,11 @@ CONF_STATION_NAME = "station_name"
 # For development/testing: timedelta(minutes=5)
 UPDATE_INTERVAL = timedelta(minutes=30)
 
+# Minimum number of pollutants required for a valid AQI measurement.
+# If fewer than this number are available, the data is considered incomplete
+# (e.g., sensor malfunction) and the update will be rejected.
+MIN_REQUIRED_POLLUTANTS = 3
+
 # -------------------------------------------------------------------
 # Sensor Descriptions
 # -------------------------------------------------------------------

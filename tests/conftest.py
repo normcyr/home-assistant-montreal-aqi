@@ -38,6 +38,7 @@ def mock_station_data():
         "pollutants": {
             "PM2.5": {"concentration": 12},
             "NO2": {"concentration": 18},
+            "O3": {"concentration": 25},
         },
         "timestamp": "2025-01-15T13:00:00",
     }

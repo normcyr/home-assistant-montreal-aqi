@@ -1,0 +1,19 @@
+# Prek configuration - faster pre-commit alternative
+# Reuses .pre-commit-config.yaml configuration
+
+# Version of prek config format
+version: 1
+
+# Inherit from pre-commit config
+# prek automatically uses .pre-commit-config.yaml if present
+# Optionally customize prek-specific settings:
+
+settings:
+  # Use all available CPU cores for parallel execution
+  max-workers: auto
+
+  # Fail fast on first hook failure
+  fail-fast: false
+
+  # Install dependencies in isolated environments (faster than pre-commit)
+  isolated: true
