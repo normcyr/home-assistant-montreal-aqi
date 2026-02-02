@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import logging
 from typing import TYPE_CHECKING, Any, cast
 
@@ -121,7 +122,7 @@ class MontrealAQIApi:
 
             params: dict[str, Any] = {
                 "resource_id": resource_id,
-                "filters": filters,
+                "filters": json.dumps(filters),
                 "sort": "date desc, heure desc",
                 "limit": 50,
             }
