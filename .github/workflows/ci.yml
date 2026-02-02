@@ -25,16 +25,24 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v2
 
+      - name: Create virtual environment
+        run: uv venv
+
       - name: Install dependencies
         run: |
+          . .venv/bin/activate
           uv pip install ruff
           if [ -f requirements.txt ]; then uv pip install -r requirements.txt; fi
 
       - name: Lint with Ruff
-        run: ruff check custom_components/
+        run: |
+          . .venv/bin/activate
+          ruff check custom_components/
 
       - name: Check formatting with Ruff
-        run: ruff format --check custom_components/
+        run: |
+          . .venv/bin/activate
+          ruff format --check custom_components/
 
   type-check:
     name: Type Check
@@ -56,13 +64,19 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v2
 
+      - name: Create virtual environment
+        run: uv venv
+
       - name: Install dependencies
         run: |
+          . .venv/bin/activate
           uv pip install mypy
           if [ -f requirements.txt ]; then uv pip install -r requirements.txt; fi
 
       - name: Type check with mypy
-        run: mypy custom_components/montreal_aqi/
+        run: |
+          . .venv/bin/activate
+          mypy custom_components/montreal_aqi/
 
   test:
     name: Test
@@ -84,13 +98,19 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v2
 
+      - name: Create virtual environment
+        run: uv venv
+
       - name: Install dependencies
         run: |
+          . .venv/bin/activate
           if [ -f requirements.txt ]; then uv pip install -r requirements.txt; fi
           if [ -f requirements_test.txt ]; then uv pip install -r requirements_test.txt; fi
 
       - name: Run unit tests with coverage
-        run: pytest --cov=custom_components.montreal_aqi --cov-report=term-missing
+        run: |
+          . .venv/bin/activate
+          pytest --cov=custom_components.montreal_aqi --cov-report=term-missing
 
       - name: Upload coverage reports
         uses: codecov/codecov-action@v3
