@@ -8,5 +8,5 @@
     "issue_tracker": "https://github.com/normcyr/home-assistant-montreal-aqi/issues",
     "loggers": ["custom_components.montreal_aqi"],
     "requirements": ["montreal-aqi-api==0.5.0"],
-    "version": "0.7.1"
+    "version": "0.7.1-rc1"
   }

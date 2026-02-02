@@ -276,7 +276,8 @@ async def test_coordinator_insufficient_pollutants_with_fallback_success(
     assert data["aqi"] == 55
     assert data["dominant_pollutant"] == "O3"
     # Fallback was called due to insufficient primary data
-    api.async_get_aqi_fallback.assert_called_once_with("80")
+    # Hour "13" is extracted from timestamp "2025-01-15T13:00:00"
+    api.async_get_aqi_fallback.assert_called_once_with("80", "13")
 
 
 async def test_coordinator_insufficient_pollutants_fallback_unavailable(
