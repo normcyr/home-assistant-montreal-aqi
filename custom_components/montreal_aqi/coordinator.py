@@ -106,8 +106,21 @@ class MontrealAQICoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 list(available_pollutants.keys()),
             )
 
+            # Extract hour from timestamp for fallback query
+            hour_str = None
+            timestamp_str = data.get("timestamp")
+            if timestamp_str:
+                try:
+                    parsed = dt_util.parse_datetime(timestamp_str)
+                    if parsed is not None:
+                        hour_str = str(parsed.hour)
+                except Exception:
+                    pass
+
             # Try fallback source (Ckan datastore)
-            fallback_data = await self.api.async_get_aqi_fallback(self.station_id)
+            fallback_data = await self.api.async_get_aqi_fallback(
+                self.station_id, hour_str
+            )
             if fallback_data:
                 _LOGGER.info(
                     "Coordinator: using fallback AQI for station %s (AQI: %s)",

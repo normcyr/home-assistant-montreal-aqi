@@ -85,7 +85,9 @@ class MontrealAQIApi:
             )
             raise
 
-    async def async_get_aqi_fallback(self, station_id: str) -> dict[str, Any] | None:
+    async def async_get_aqi_fallback(
+        self, station_id: str, hour: str | None = None
+    ) -> dict[str, Any] | None:
         """Fetch AQI data from fallback source (Ckan datastore) if primary source insufficient.
 
         This is used when detailed pollutant data is unavailable but we still want
@@ -93,6 +95,7 @@ class MontrealAQIApi:
 
         Args:
             station_id: Station ID (as string)
+            hour: Hour to search for (0-23), or None to get the most recent
 
         Returns:
             Dictionary with 'aqi' and 'dominant_pollutant' keys
@@ -101,18 +104,26 @@ class MontrealAQIApi:
         Raises:
             Exception: If API call fails
         """
-        _LOGGER.debug("API: Fetching AQI fallback for station %s from Ckan", station_id)
+        _LOGGER.debug(
+            "API: Fetching AQI fallback for station %s from Ckan (hour: %s)",
+            station_id,
+            hour or "latest",
+        )
 
         try:
             # Ckan datastore API endpoint
             ckan_url = "https://donnees.montreal.ca/api/3/action/datastore_search"
             resource_id = "6554355e-63d1-4a01-a268-91e0763c3606"
 
+            filters: dict[str, Any] = {"stationId": station_id}
+            if hour is not None:
+                filters["heure"] = hour
+
             params: dict[str, Any] = {
                 "resource_id": resource_id,
-                "filters": [{"field": "stationId", "value": station_id}],
+                "filters": filters,
                 "sort": "date desc, heure desc",
-                "limit": 1,
+                "limit": 50,
             }
 
             async with (
@@ -147,7 +158,7 @@ class MontrealAQIApi:
                 )
                 return None
 
-            # Get the most recent record
+            # Get the most recent record (already sorted by date desc, heure desc)
             record = records[0]
             aqi_value = int(float(record.get("valeur", 0)))
             dominant_pollutant = record.get("pollutant")
