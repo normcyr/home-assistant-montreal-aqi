@@ -1,12 +1,12 @@
 [project]
 name = "home-assistant-montreal-aqi"
-version = "0.7.1-rc1"
+version = "0.7.2-rc1"
 description = "Home Assistant custom component for Montreal Air Quality Index"
 readme = "README.md"
 requires-python = ">=3.12"
 license = {text = "MIT"}
 authors = [
-	{name = "normcyr", email = "normcyr@users.noreply.github.com"}
+	{name = "normcyr", email = "norm@normandcyr.com"}
 ]
 classifiers = [
 	"Development Status :: 4 - Beta",

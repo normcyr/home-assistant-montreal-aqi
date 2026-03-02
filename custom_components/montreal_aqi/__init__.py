@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import logging
+import logging.handlers
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from .const import CONF_STATION_ID, DOMAIN, PLATFORMS
@@ -10,6 +12,24 @@ if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
 
 _LOGGER = logging.getLogger(__name__)
+
+
+def _setup_file_logging(hass: HomeAssistant) -> logging.handlers.RotatingFileHandler:
+    """Set up file logging for Montreal AQI."""
+    log_file = Path(hass.config.path("montreal_aqi.log"))
+    file_handler = logging.handlers.RotatingFileHandler(
+        log_file,
+        maxBytes=10485760,  # 10MB
+        backupCount=3,
+    )
+    file_handler.setFormatter(
+        logging.Formatter(
+            "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S",
+        )
+    )
+    _LOGGER.addHandler(file_handler)
+    return file_handler
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -22,6 +42,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     Returns:
         True if setup was successful
     """
+    # Set up file logging for Montreal AQI (non-blocking)
+    await hass.async_add_executor_job(_setup_file_logging, hass)
+
     _LOGGER.debug("Setting up entry %s", entry.entry_id)
 
     from .api import MontrealAQIApi
