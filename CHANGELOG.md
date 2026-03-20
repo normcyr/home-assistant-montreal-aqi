@@ -5,14 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.7.2-rc1] - 2026-03-02
+## [0.7.2] - 2026-03-20
 
 ### Changed
-- **Upgraded montreal-aqi-api**: Updated to version 0.7.0 for improved API reliability
+- **Upgraded montreal-aqi-api**: Updated to version 0.7.1 for improved API reliability
 - **AsyncIO compatibility fix**: Fixed blocking file I/O call in async setup using executor jobs
 
 ### Testing
-- Full test suite passes with montreal-aqi-api 0.7.0
+- Full test suite passes with montreal-aqi-api 0.7.1
 - Tested with Home Assistant 2024.12.0+ in Docker environment
 
 ## [0.7.0] - 2026-01-26
