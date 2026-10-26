@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] - 2026-10-26
+
+### Changed
+- **Upgraded montreal-aqi-api**: Updated to version 0.8.0 (datastore queries now sent as JSON POST so filters are applied)
+
+### Fixed
+- Ckan fallback query now uses a JSON POST body and discards records from other stations, as the datastore ignores `filters` on GET requests (#15)
+
 ## [0.7.2] - 2026-03-20
 
 ### Changed

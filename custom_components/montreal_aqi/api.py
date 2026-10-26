@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import logging
 from typing import TYPE_CHECKING, Any, cast
 
@@ -120,18 +119,19 @@ class MontrealAQIApi:
             if hour is not None:
                 filters["heure"] = hour
 
-            params: dict[str, Any] = {
+            # The datastore ignores `filters` on GET; it must be a JSON POST body
+            body: dict[str, Any] = {
                 "resource_id": resource_id,
-                "filters": json.dumps(filters),
+                "filters": filters,
                 "sort": "date desc, heure desc",
                 "limit": 50,
             }
 
             async with (
                 aiohttp.ClientSession() as session,
-                session.get(
+                session.post(
                     ckan_url,
-                    params=params,  # type: ignore[arg-type]
+                    json=body,
                     timeout=aiohttp.ClientTimeout(total=10),
                 ) as resp,
             ):
@@ -151,7 +151,12 @@ class MontrealAQIApi:
                 )
                 return None
 
-            records = data.get("result", {}).get("records", [])
+            records = [
+                rec
+                for rec in data.get("result", {}).get("records", [])
+                if str(rec.get("stationId")) == str(station_id)
+                and (hour is None or str(rec.get("heure")) == str(hour))
+            ]
             if not records:
                 _LOGGER.warning(
                     "API: No fallback data found for station %s in Ckan",
